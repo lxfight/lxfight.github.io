@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lxfight | 个人主页</title>
+    <meta
+      name="description"
+      content="lxfight 的个人主页，展示简介、技能和GitHub项目。"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+
+  <body>
+    <!-- 加载指示器 -->
+    <div id="loader" class="loader"></div>
+
+    <!-- 顶部工具栏 -->
+    <nav class="toolbar blur-bg" id="toolbar" style="display: none">
+      <div class="toolbar-content">
+        <span id="header-name" class="header-name">lxfight</span>
+        <div class="toolbar-buttons">
+          <button
+            id="lang-toggle"
+            class="icon-button"
+            aria-label="Switch Language"
+          >
+            🌐 EN / 中
+          </button>
+          <button
+            id="theme-toggle"
+            class="icon-button"
+            aria-label="Toggle Theme"
+          >
+            <!-- SVG Icon will be injected by JS -->
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container" id="content" style="display: none">
+      <!-- 左侧边栏 -->
+      <aside class="sidebar card blur-bg">
+        <!-- 1. 个人基础信息 (API) -->
+        <section class="profile-info">
+          <img
+            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            alt="Avatar"
+            class="avatar"
+            id="avatar"
+            width="110"
+            height="110"
+          />
+          <h1 id="name">lxfight</h1>
+          <p id="bio" class="bio">...</p>
+          <p id="location" class="location meta-text"></p>
+          <div class="links">
+            <a
+              href="https://github.com/lxfight"
+              id="github-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="button"
+              data-key="viewOnGithub"
+            >
+              GitHub
+            </a>
+          </div>
+        </section>
+        <hr class="divider" />
+        <!-- 2. 自我介绍 (README) -->
+        <section aria-labelledby="about-title">
+          <h2 class="section-title" id="about-title" data-key="aboutMe">
+            关于我
+          </h2>
+          <div id="intro-section" class="text-content left-align"></div>
+        </section>
+        <hr class="divider" />
+        <!-- 3. GitHub 统计图 (README Image) -->
+        <section aria-labelledby="statsimg-title">
+          <h2 class="section-title" id="statsimg-title" data-key="githubStats">
+            GitHub 统计
+          </h2>
+          <img
+            id="stats-img"
+            src=""
+            alt="GitHub Stats"
+            class="stats-image"
+            loading="lazy"
+          />
+          <img
+            id="langs-img"
+            src=""
+            alt="Top Languages"
+            class="stats-image"
+            loading="lazy"
+            style="margin-top: 8px"
+          />
+        </section>
+        <hr class="divider" />
+        <!-- 4. 技能/技术栈 (JS Config) -->
+        <section aria-labelledby="skills-title">
+          <h2 class="section-title" id="skills-title" data-key="skills">
+            技术栈
+          </h2>
+          <div class="skills-list" id="skills-list"></div>
+        </section>
+      </aside>
+
+      <!-- 右侧主内容区 -->
+      <main class="main-content">
+        <!-- 5. 亮点项目 (README Table) -->
+        <section
+          class="card blur-bg section-block"
+          aria-labelledby="highlight-title"
+        >
+          <h2
+            class="section-title main-title"
+            id="highlight-title"
+            data-key="highlightProjects"
+          >
+            我的亮点项目
+          </h2>
+          <div id="highlight-projects-table" class="table-container">
+            <!-- JS 动态生成表格 -->
+          </div>
+        </section>
+
+        <!-- 6. 最新项目 (API) -->
+        <section class="section-block" aria-labelledby="repo-title">
+          <h2
+            class="section-title main-title"
+            id="repo-title"
+            data-key="latestProjects"
+          >
+            最新项目 (API获取)
+          </h2>
+          <div id="projects-list" class="projects-grid">
+            <!-- JS 动态生成 -->
+          </div>
+          <div id="repo-error" class="error-message"></div>
+        </section>
+
+        <!-- 7. 活动图 (README Image) -->
+        <section
+          class="card blur-bg section-block"
+          aria-labelledby="activity-title"
+        >
+          <h2
+            class="section-title main-title"
+            id="activity-title"
+            data-key="activityGraph"
+          >
+            我的 GitHub 活动图
+          </h2>
+          <img
+            id="activity-graph-img"
+            src=""
+            alt="Activity Graph"
+            class="activity-graph-image"
+            loading="lazy"
+          />
+        </section>
+      </main>
+    </div>
+
+    <!-- 页脚 -->
+    <footer id="footer" class="blur-bg" style="display: none">
+      <p>
+        <span data-key="footerAuto">部分内容通过 GitHub API 自动获取</span> |
+        &copy; <span id="year"></span> <span id="footer-name">lxfight</span>
+      </p>
+    </footer>
+
+    <!-- 左下角人物图 -->
+    <div class="corner-character" id="corner-char" style="display: none">
+      <img id="corner-img" src="" alt="Character" loading="lazy" />
+    </div>
+
+    <div id="main-error" class="error-message global-error"></div>
+  </body>
+</html>
