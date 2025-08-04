@@ -1,0 +1,17 @@
+{
+  "name": "lxfight-blog",
+  "version": "1.0.0",
+  "description": "Static blog generator using Markdown",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js --watch"
+  },
+  "dependencies": {
+    "marked": "^12.0.0",
+    "highlight.js": "^11.9.0",
+    "front-matter": "^4.0.2"
+  },
+  "devDependencies": {
+    "chokidar": "^3.5.3"
+  }
+}
