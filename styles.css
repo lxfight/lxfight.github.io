@@ -605,6 +605,51 @@ nav ul li a.active {
     font-weight: 500;
 }
 
+/* Project Stars */
+.stars {
+    color: #f39c12;
+    font-size: 0.9rem;
+    font-weight: normal;
+    margin-left: 0.5rem;
+}
+
+/* Project Links */
+.project-link {
+    display: inline-block;
+    margin-top: 0.8rem;
+    margin-right: 0.8rem;
+    padding: 0.4rem 1rem;
+    background: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.project-link:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+.project-link.demo {
+    background: #27ae60;
+}
+
+.project-link.demo:hover {
+    background: #229954;
+}
+
+/* Collaboration Project Style */
+.project-item.collaboration {
+    border-left-color: #9b59b6;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f3e5f5 100%);
+}
+
+.project-item.collaboration h4 {
+    color: #7b1fa2;
+}
+
 /* Interest List */
 .interest-list {
     list-style: none;
