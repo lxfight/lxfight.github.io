@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - lxfight 个人博客</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body class="post-page">
+    <!-- 动态背景 -->
+    <div class="modern-bg">
+        <div class="bg-gradient bg-gradient-1"></div>
+        <div class="bg-gradient bg-gradient-2"></div>
+        <div class="bg-gradient bg-gradient-3"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="nav-container">
+                <h1><a href="../index.html">lxfight</a></h1>
+                <ul>
+                    <li><a href="../index.html">首页</a></li>
+                    <li><a href="../about.html">关于我</a></li>
+                    <li><a href="../blog.html">博客</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="post-content-modern">
+        <div class="post-container">
+            <header class="post-header-modern glass-card">
+                <h1>{{title}}</h1>
+                <p class="post-meta-modern">发布于 {{date}} | {{category}}</p>
+                {{tags}}
+            </header>
+            
+            <div class="post-body-modern glass-card">
+                {{content}}
+            </div>
+            
+            <footer class="post-footer-modern glass-card">
+                <a href="../blog.html">← 返回博客列表</a>
+            </footer>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 lxfight 个人博客. 所有权利保留.</p>
+        </div>
+    </footer>
+</body>
+</html>

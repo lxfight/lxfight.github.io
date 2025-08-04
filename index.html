@@ -6,13 +6,26 @@
     <title>lxfight 个人博客</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="modern-light-bg">
+    <!-- 动态背景 -->
+    <div class="modern-bg">
+        <div class="bg-gradient bg-gradient-1"></div>
+        <div class="bg-gradient bg-gradient-2"></div>
+        <div class="bg-gradient bg-gradient-3"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+    </div>
+
     <header>
         <nav>
             <div class="nav-container">
                 <h1><a href="index.html">lxfight</a></h1>
                 <ul>
-                    <li><a href="index.html">首页</a></li>
+                    <li><a href="index.html" class="active">首页</a></li>
                     <li><a href="about.html">关于我</a></li>
                     <li><a href="blog.html">博客</a></li>
                 </ul>
@@ -20,27 +33,87 @@
         </nav>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="hero-content">
-                <h2>欢迎来到 lxfight 的个人博客</h2>
-                <p>分享技术、生活和思考</p>
+    <main class="about-main">
+        <section class="hero-modern">
+            <div class="container">
+                <div class="hero-card glass-card">
+                    <h2>欢迎来到 lxfight 的个人博客</h2>
+                    <p>分享技术、生活和思考</p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">6+</span>
+                            <span class="stat-label">开源项目</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">350+</span>
+                            <span class="stat-label">GitHub Stars</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">4</span>
+                            <span class="stat-label">技术文章</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="recent-posts">
+        <section class="recent-posts-modern">
             <div class="container">
-                <h3>最新文章</h3>
-                <div class="posts-grid">
-                    <article class="post-card">
-                        <h4><a href="posts/first-post.html">我的第一篇博客</a></h4>
-                        <p class="post-date">2024-01-01</p>
-                        <p class="post-excerpt">这是我博客的第一篇文章，分享一下建站的经历...</p>
+                <h3 class="section-title">最新文章</h3>
+                <div class="posts-grid-modern">
+                    <article class="post-card-modern glass-card">
+                        <div class="post-card-header">
+                            <span class="post-badge featured">⭐ 精选</span>
+                            <span class="post-date">2024-08-04</span>
+                        </div>
+                        <h4><a href="posts/astrbot-plugin-development.html">AstrBot插件开发实战</a></h4>
+                        <div class="post-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">RAG</span>
+                            <span class="tag">插件开发</span>
+                        </div>
+                        <p class="post-excerpt">深入分析获得110+ stars的AstrBot Mnemosyne插件开发过程...</p>
+                        <a href="posts/astrbot-plugin-development.html" class="read-more-btn">阅读更多 →</a>
                     </article>
-                    <article class="post-card">
+                    <article class="post-card-modern glass-card">
+                        <div class="post-card-header">
+                            <span class="post-badge featured">🚀 热门</span>
+                            <span class="post-date">2024-07-28</span>
+                        </div>
+                        <h4><a href="posts/deno-github-proxy.html">GitHub加速访问服务</a></h4>
+                        <div class="post-tags">
+                            <span class="tag">Deno</span>
+                            <span class="tag">TypeScript</span>
+                            <span class="tag">网络代理</span>
+                        </div>
+                        <p class="post-excerpt">基于Deno构建的GitHub加速服务获得178 Stars...</p>
+                        <a href="posts/deno-github-proxy.html" class="read-more-btn">阅读更多 →</a>
+                    </article>
+                    <article class="post-card-modern glass-card">
+                        <div class="post-card-header">
+                            <span class="post-badge">📝</span>
+                            <span class="post-date">2024-01-15</span>
+                        </div>
                         <h4><a href="posts/web-development.html">Web开发学习心得</a></h4>
-                        <p class="post-date">2024-01-15</p>
-                        <p class="post-excerpt">在学习Web开发过程中的一些经验和总结...</p>
+                        <div class="post-tags">
+                            <span class="tag">前端</span>
+                            <span class="tag">经验分享</span>
+                        </div>
+                        <p class="post-excerpt">从基础到进阶，分享Web开发学习路径和实践经验...</p>
+                        <a href="posts/web-development.html" class="read-more-btn">阅读更多 →</a>
+                    </article>
+                    <article class="post-card-modern glass-card">
+                        <div class="post-card-header">
+                            <span class="post-badge">🎯</span>
+                            <span class="post-date">2024-01-01</span>
+                        </div>
+                        <h4><a href="posts/first-post.html">开源之路：博客搭建思考</a></h4>
+                        <div class="post-tags">
+                            <span class="tag">博客</span>
+                            <span class="tag">GitHub Pages</span>
+                        </div>
+                        <p class="post-excerpt">记录个人博客搭建的技术选型和设计思路...</p>
+                        <a href="posts/first-post.html" class="read-more-btn">阅读更多 →</a>
                     </article>
                 </div>
             </div>

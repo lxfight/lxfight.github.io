@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">文章加载中... - lxfight 个人博客</title>
+    <link rel="stylesheet" href="../styles.css">
+    <!-- Markdown 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
+    <!-- 代码高亮库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body class="modern-light-bg">
+    <header>
+        <nav>
+            <div class="nav-container">
+                <h1><a href="../index.html">lxfight</a></h1>
+                <ul>
+                    <li><a href="../index.html">首页</a></li>
+                    <li><a href="../about.html">关于我</a></li>
+                    <li><a href="../blog.html">博客</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <article class="post-content">
+            <div class="container">
+                <!-- 文章元信息会由JavaScript动态生成 -->
+                <header class="post-header" id="post-header">
+                    <div class="loading-spinner">📖 文章加载中...</div>
+                </header>
+                
+                <!-- Markdown内容会渲染到这里 -->
+                <div class="post-body" id="post-body">
+                    <div class="loading-content">
+                        <p>正在加载文章内容...</p>
+                    </div>
+                </div>
+                
+                <footer class="post-footer">
+                    <p><a href="../blog.html">← 返回博客列表</a></p>
+                </footer>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 lxfight 个人博客. 所有权利保留.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 配置marked选项
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        // 从URL参数获取文章ID
+        function getArticleId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id') || 'first-post';
+        }
+
+        // 加载并渲染文章
+        async function loadArticle() {
+            const articleId = getArticleId();
+            
+            try {
+                // 加载文章配置
+                const configResponse = await fetch(`../articles/${articleId}/config.json`);
+                if (!configResponse.ok) {
+                    throw new Error('文章配置加载失败');
+                }
+                const config = await configResponse.json();
+
+                // 加载Markdown内容
+                const contentResponse = await fetch(`../articles/${articleId}/content.md`);
+                if (!contentResponse.ok) {
+                    throw new Error('文章内容加载失败');
+                }
+                const markdown = await contentResponse.text();
+
+                // 渲染文章
+                renderArticle(config, markdown);
+                
+            } catch (error) {
+                console.error('加载文章失败:', error);
+                renderError(error.message);
+            }
+        }
+
+        // 渲染文章内容
+        function renderArticle(config, markdown) {
+            // 更新页面标题
+            document.getElementById('page-title').textContent = `${config.title} - lxfight 个人博客`;
+            document.title = `${config.title} - lxfight 个人博客`;
+
+            // 渲染文章头部
+            const headerHtml = `
+                <h1>${config.title}</h1>
+                <p class="post-meta">发布于 ${config.date}${config.category ? ' | ' + config.category : ''}</p>
+                ${config.tags ? `
+                <div class="post-tags">
+                    ${config.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('post-header').innerHTML = headerHtml;
+
+            // 渲染Markdown内容
+            const htmlContent = marked.parse(markdown);
+            document.getElementById('post-body').innerHTML = htmlContent;
+
+            // 高亮代码块
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+
+            // 添加复制代码功能
+            addCodeCopyButtons();
+        }
+
+        // 渲染错误信息
+        function renderError(message) {
+            document.getElementById('post-header').innerHTML = `
+                <h1>文章加载失败</h1>
+                <p class="post-meta error">❌ ${message}</p>
+            `;
+            document.getElementById('post-body').innerHTML = `
+                <div class="error-content">
+                    <p>抱歉，无法加载此文章。可能的原因：</p>
+                    <ul>
+                        <li>文章不存在或已被移动</li>
+                        <li>网络连接问题</li>
+                        <li>文件格式错误</li>
+                    </ul>
+                    <p><a href="../blog.html">← 返回博客列表</a></p>
+                </div>
+            `;
+        }
+
+        // 为代码块添加复制按钮
+        function addCodeCopyButtons() {
+            document.querySelectorAll('pre').forEach((pre) => {
+                const button = document.createElement('button');
+                button.className = 'copy-code-btn';
+                button.textContent = '复制';
+                button.onclick = () => {
+                    const code = pre.querySelector('code').textContent;
+                    navigator.clipboard.writeText(code).then(() => {
+                        button.textContent = '已复制!';
+                        setTimeout(() => {
+                            button.textContent = '复制';
+                        }, 2000);
+                    });
+                };
+                pre.appendChild(button);
+            });
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', loadArticle);
+    </script>
+</body>
+</html>

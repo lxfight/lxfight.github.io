@@ -33,7 +33,20 @@ function readTemplate() {
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
-<body>
+<body class="post-page">
+    <!-- 动态背景 -->
+    <div class="modern-bg">
+        <div class="bg-gradient bg-gradient-1"></div>
+        <div class="bg-gradient bg-gradient-2"></div>
+        <div class="bg-gradient bg-gradient-3"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+    </div>
+
     <header>
         <nav>
             <div class="nav-container">
@@ -47,24 +60,22 @@ function readTemplate() {
         </nav>
     </header>
 
-    <main>
-        <article class="post-content">
-            <div class="container">
-                <header class="post-header">
-                    <h1>{{title}}</h1>
-                    <p class="post-meta">发布于 {{date}} | {{category}}</p>
-                    {{tags}}
-                </header>
-                
-                <div class="post-body">
-                    {{content}}
-                </div>
-                
-                <footer class="post-footer">
-                    <p><a href="../blog.html">← 返回博客列表</a></p>
-                </footer>
+    <main class="post-content-modern">
+        <div class="post-container">
+            <header class="post-header-modern glass-card">
+                <h1>{{title}}</h1>
+                <p class="post-meta-modern">发布于 {{date}} | {{category}}</p>
+                {{tags}}
+            </header>
+            
+            <div class="post-body-modern glass-card">
+                {{content}}
             </div>
-        </article>
+            
+            <footer class="post-footer-modern glass-card">
+                <a href="../blog.html">← 返回博客列表</a>
+            </footer>
+        </div>
     </main>
 
     <footer>
@@ -82,7 +93,7 @@ function readTemplate() {
 function generateTagsHTML(tags) {
   if (!tags || tags.length === 0) return '';
   const tagElements = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
-  return `<div class="post-tags">${tagElements}</div>`;
+  return `<div class="post-tags-modern">${tagElements}</div>`;
 }
 
 function processMarkdownFile(filePath) {

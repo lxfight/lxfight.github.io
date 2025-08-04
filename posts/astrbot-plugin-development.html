@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstrBot插件开发实战：从零打造RAG记忆系统 - lxfight 个人博客</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="modern-light-bg">
+    <header>
+        <nav>
+            <div class="nav-container">
+                <h1><a href="../index.html">lxfight</a></h1>
+                <ul>
+                    <li><a href="../index.html">首页</a></li>
+                    <li><a href="../about.html">关于我</a></li>
+                    <li><a href="../blog.html">博客</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <article class="post-content">
+            <div class="container">
+                <header class="post-header">
+                    <h1>AstrBot插件开发实战：从零打造RAG记忆系统</h1>
+                    <p class="post-meta">发布于 2024-08-04 | 技术分享</p>
+                    <div class="post-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">RAG</span>
+                        <span class="tag">插件开发</span>
+                    </div>
+                </header>
+                
+                <div class="post-body">
+                    <p>在开发AstrBot Mnemosyne插件的过程中，我深入探索了RAG（Retrieval-Augmented Generation）技术在聊天机器人长期记忆中的应用。今天分享一下从零开始构建这个获得110+ stars的插件的经验。</p>
+                    
+                    <h2>项目背景与动机</h2>
+                    <p>传统的聊天机器人在长对话中往往会"忘记"之前的上下文，这严重影响了用户体验。Mnemosyne插件的目标是为AstrBot提供持久化的记忆能力，让机器人能够记住重要的对话内容并在适当时候调用。</p>
+                    
+                    <h2>技术架构设计</h2>
+                    <p>核心技术栈包括：</p>
+                    <ul>
+                        <li><strong>向量数据库</strong>：使用Chroma/FAISS存储文本向量</li>
+                        <li><strong>文本嵌入</strong>：集成OpenAI Embeddings API</li>
+                        <li><strong>检索策略</strong>：实现语义相似度搜索</li>
+                        <li><strong>记忆管理</strong>：自动化的记忆存储和清理机制</li>
+                    </ul>
+                    
+                    <h2>关键实现细节</h2>
+                    
+                    <h3>1. 文本预处理与分块</h3>
+                    <pre><code>def chunk_text(text: str, max_chunk_size: int = 500) -> List[str]:
+    """将长文本分割成适合向量化的块"""
+    sentences = re.split(r'[.!?。！？]', text)
+    chunks = []
+    current_chunk = ""
+    
+    for sentence in sentences:
+        if len(current_chunk + sentence) <= max_chunk_size:
+            current_chunk += sentence + "。"
+        else:
+            if current_chunk:
+                chunks.append(current_chunk.strip())
+            current_chunk = sentence + "。"
+    
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+    
+    return chunks</code></pre>
+    
+                    <h3>2. 智能记忆筛选</h3>
+                    <p>不是所有对话都需要长期记住。插件实现了基于重要性评分的记忆筛选机制：</p>
+                    <pre><code>def calculate_importance_score(message: str) -> float:
+    """计算消息的重要性得分"""
+    score = 0.0
+    
+    # 包含特定关键词的消息更重要
+    important_keywords = ['喜欢', '讨厌', '记住', '重要', '秘密']
+    for keyword in important_keywords:
+        if keyword in message:
+            score += 0.2
+    
+    # 问答形式的对话更重要
+    if '？' in message or '吗' in message:
+        score += 0.1
+    
+    # 长度适中的消息更有价值
+    if 10 <= len(message) <= 100:
+        score += 0.1
+    
+    return min(score, 1.0)</code></pre>
+    
+                    <h3>3. 检索优化策略</h3>
+                    <p>为了提高检索准确性，实现了多层次的检索策略：</p>
+                    <ul>
+                        <li><strong>语义检索</strong>：基于向量相似度的主要检索方式</li>
+                        <li><strong>关键词检索</strong>：补充精确匹配的场景</li>
+                        <li><strong>时间衰减</strong>：越近期的记忆权重越高</li>
+                    </ul>
+                    
+                    <h2>性能优化经验</h2>
+                    
+                    <h3>1. 批量处理</h3>
+                    <p>对于大量文本的向量化，采用批量处理显著提升了效率：</p>
+                    <pre><code>async def batch_embed_texts(texts: List[str], batch_size: int = 10):
+    """批量生成文本向量"""
+    embeddings = []
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i + batch_size]
+        batch_embeddings = await client.embeddings.create(
+            model="text-embedding-ada-002",
+            input=batch
+        )
+        embeddings.extend([e.embedding for e in batch_embeddings.data])
+    return embeddings</code></pre>
+    
+                    <h3>2. 缓存机制</h3>
+                    <p>实现了LRU缓存来避免重复的向量化计算，将响应速度提升了60%。</p>
+                    
+                    <h2>用户反馈与迭代</h2>
+                    <p>插件发布后收到了很多用户反馈，主要改进包括：</p>
+                    <ul>
+                        <li>增加了记忆容量限制，避免存储空间无限增长</li>
+                        <li>优化了检索结果的相关性排序算法</li>
+                        <li>添加了记忆导出功能，方便用户管理</li>
+                        <li>支持多种嵌入模型，降低使用成本</li>
+                    </ul>
+                    
+                    <h2>开源影响与社区贡献</h2>
+                    <p>该项目目前已获得110+ GitHub Stars，被多个AstrBot用户采用。通过开源，我不仅帮助了其他开发者，也从社区获得了宝贵的反馈和改进建议。</p>
+                    
+                    <h2>未来规划</h2>
+                    <p>接下来计划加入以下功能：</p>
+                    <ul>
+                        <li>支持图片和文件的记忆存储</li>
+                        <li>实现分层记忆结构（短期/长期记忆）</li>
+                        <li>添加记忆主动遗忘机制</li>
+                        <li>集成更多向量数据库选项</li>
+                    </ul>
+                    
+                    <h2>总结</h2>
+                    <p>开发AstrBot Mnemosyne插件是一次很有价值的技术实践。RAG技术在聊天机器人场景下的应用还有很大的探索空间，希望这次分享能为其他开发者提供一些参考。</p>
+                    
+                    <p>如果你对插件开发或RAG技术感兴趣，欢迎访问<a href="https://github.com/lxfight/astrbot_plugin_mnemosyne" target="_blank">项目仓库</a>了解更多细节！</p>
+                </div>
+                
+                <footer class="post-footer">
+                    <p><a href="../blog.html">← 返回博客列表</a></p>
+                </footer>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 lxfight 个人博客. 所有权利保留.</p>
+        </div>
+    </footer>
+</body>
+</html>

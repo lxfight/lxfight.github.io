@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub加速访问服务的Deno实现与架构思考 - lxfight 个人博客</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="modern-light-bg">
+    <header>
+        <nav>
+            <div class="nav-container">
+                <h1><a href="../index.html">lxfight</a></h1>
+                <ul>
+                    <li><a href="../index.html">首页</a></li>
+                    <li><a href="../about.html">关于我</a></li>
+                    <li><a href="../blog.html">博客</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <article class="post-content">
+            <div class="container">
+                <header class="post-header">
+                    <h1>GitHub加速访问服务的Deno实现与架构思考</h1>
+                    <p class="post-meta">发布于 2024-07-28 | 架构设计</p>
+                    <div class="post-tags">
+                        <span class="tag">Deno</span>
+                        <span class="tag">TypeScript</span>
+                        <span class="tag">网络代理</span>
+                    </div>
+                </header>
+                
+                <div class="post-body">
+                    <p>AstrBot2GitHub项目是我开发的一个基于Deno的GitHub加速访问服务，目前已获得178 Stars和633 Forks。这篇文章将深入分析项目的技术架构和设计思路。</p>
+                    
+                    <h2>项目背景</h2>
+                    <p>国内访问GitHub经常面临网络连接不稳定的问题，特别是在使用AstrBot等需要频繁访问GitHub API的场景下。为了解决这个痛点，我开发了这个轻量级的代理服务。</p>
+                    
+                    <h2>为什么选择Deno？</h2>
+                    <p>相比Node.js，Deno在这个项目中有几个显著优势：</p>
+                    <ul>
+                        <li><strong>原生TypeScript支持</strong>：无需额外配置即可运行TS代码</li>
+                        <li><strong>内置Web API</strong>：fetch、URL等现代Web标准开箱即用</li>
+                        <li><strong>安全性</strong>：默认沙盒环境，权限细粒度控制</li>
+                        <li><strong>标准库质量高</strong>：HTTP服务器实现简洁高效</li>
+                    </ul>
+                    
+                    <h2>核心架构设计</h2>
+                    
+                    <h3>1. 请求路由与代理</h3>
+                    <p>核心的代理逻辑实现：</p>
+                    <pre><code>import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
+
+const GITHUB_API_BASE = "https://api.github.com";
+const GITHUB_RAW_BASE = "https://raw.githubusercontent.com";
+
+async function handleRequest(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.pathname;
+  
+  // 路由匹配
+  let targetUrl: string;
+  if (path.startsWith('/api/')) {
+    targetUrl = `${GITHUB_API_BASE}${path.replace('/api', '')}`;
+  } else if (path.startsWith('/raw/')) {
+    targetUrl = `${GITHUB_RAW_BASE}${path.replace('/raw', '')}`;
+  } else {
+    return new Response('Not Found', { status: 404 });
+  }
+  
+  // 代理请求
+  return await proxyRequest(request, targetUrl);
+}</code></pre>
+                    
+                    <h3>2. 智能缓存策略</h3>
+                    <p>为了减少对GitHub API的直接请求，实现了多层缓存机制：</p>
+                    <pre><code>interface CacheEntry {
+  data: any;
+  timestamp: number;
+  etag?: string;
+}
+
+class SmartCache {
+  private cache = new Map<string, CacheEntry>();
+  private readonly TTL = 5 * 60 * 1000; // 5分钟
+  
+  async get(key: string, etag?: string): Promise<CacheEntry | null> {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    
+    // 检查时间过期
+    if (Date.now() - entry.timestamp > this.TTL) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    // ETag匹配
+    if (etag && entry.etag !== etag) {
+      return null;
+    }
+    
+    return entry;
+  }
+  
+  set(key: string, data: any, etag?: string): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      etag
+    });
+  }
+}</code></pre>
+                    
+                    <h3>3. 请求限流与熔断</h3>
+                    <p>为了避免过度请求GitHub API，实现了令牌桶算法：</p>
+                    <pre><code>class RateLimiter {
+  private tokens: number;
+  private lastRefill: number;
+  private readonly capacity: number;
+  private readonly refillRate: number;
+  
+  constructor(capacity: number, refillRate: number) {
+    this.capacity = capacity;
+    this.refillRate = refillRate;
+    this.tokens = capacity;
+    this.lastRefill = Date.now();
+  }
+  
+  tryConsume(): boolean {
+    this.refill();
+    
+    if (this.tokens >= 1) {
+      this.tokens--;
+      return true;
+    }
+    
+    return false;
+  }
+  
+  private refill(): void {
+    const now = Date.now();
+    const timePassed = (now - this.lastRefill) / 1000;
+    const tokensToAdd = timePassed * this.refillRate;
+    
+    this.tokens = Math.min(this.capacity, this.tokens + tokensToAdd);
+    this.lastRefill = now;
+  }
+}</code></pre>
+                    
+                    <h2>性能优化实践</h2>
+                    
+                    <h3>1. 连接池管理</h3>
+                    <p>使用Keep-Alive连接减少TCP握手开销：</p>
+                    <pre><code>const client = new HTTPClient({
+  keepAlive: true,
+  maxIdleConnections: 100,
+  maxIdleConnectionsPerHost: 10,
+  idleTimeout: 30000
+});</code></pre>
+                    
+                    <h3>2. 响应流式处理</h3>
+                    <p>对于大文件下载，使用流式代理避免内存溢出：</p>
+                    <pre><code>async function streamProxy(request: Request, targetUrl: string): Promise<Response> {
+  const response = await fetch(targetUrl, {
+    method: request.method,
+    headers: request.headers,
+    body: request.body
+  });
+  
+  return new Response(response.body, {
+    status: response.status,
+    headers: response.headers
+  });
+}</code></pre>
+                    
+                    <h2>监控与日志</h2>
+                    <p>集成了结构化日志和性能监控：</p>
+                    <pre><code>interface LogContext {
+  requestId: string;
+  method: string;
+  path: string;
+  userAgent?: string;
+  responseTime?: number;
+  statusCode?: number;
+}
+
+function logRequest(context: LogContext): void {
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level: 'INFO',
+    message: 'Request processed',
+    ...context
+  }));
+}</code></pre>
+                    
+                    <h2>部署与运维</h2>
+                    
+                    <h3>1. 容器化部署</h3>
+                    <pre><code>FROM denoland/deno:1.40.0
+
+WORKDIR /app
+COPY . .
+
+RUN deno cache src/main.ts
+
+EXPOSE 8000
+
+CMD ["run", "--allow-net", "--allow-env", "src/main.ts"]</code></pre>
+                    
+                    <h3>2. 健康检查</h3>
+                    <p>实现了简单的健康检查端点：</p>
+                    <pre><code>async function healthCheck(): Promise<Response> {
+  const status = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: Deno.pid ? process.uptime() : 0,
+    memory: Deno.memoryUsage?.() || {}
+  };
+  
+  return Response.json(status);
+}</code></pre>
+                    
+                    <h2>社区反响与改进</h2>
+                    <p>项目开源后收到了很多用户反馈：</p>
+                    <ul>
+                        <li>优化了错误处理机制，提供更友好的错误信息</li>
+                        <li>添加了配置文件支持，便于自定义部署</li>
+                        <li>实现了多个GitHub镜像源的自动切换</li>
+                        <li>增加了请求统计和监控面板</li>
+                    </ul>
+                    
+                    <h2>技术挑战与解决方案</h2>
+                    
+                    <h3>1. CORS处理</h3>
+                    <p>需要正确处理跨域请求：</p>
+                    <pre><code>function addCorsHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  return new Response(response.body, {
+    status: response.status,
+    headers
+  });
+}</code></pre>
+                    
+                    <h3>2. 认证令牌处理</h3>
+                    <p>安全地转发GitHub认证信息：</p>
+                    <pre><code>function processAuthHeaders(headers: Headers): Headers {
+  const newHeaders = new Headers();
+  
+  for (const [key, value] of headers.entries()) {
+    if (key.toLowerCase() === 'authorization') {
+      // 验证令牌格式
+      if (value.startsWith('token ') || value.startsWith('Bearer ')) {
+        newHeaders.set(key, value);
+      }
+    } else if (!key.toLowerCase().startsWith('x-forwarded-')) {
+      newHeaders.set(key, value);
+    }
+  }
+  
+  return newHeaders;
+}</code></pre>
+                    
+                    <h2>未来规划</h2>
+                    <p>计划在下个版本中加入：</p>
+                    <ul>
+                        <li>GraphQL API支持</li>
+                        <li>WebSocket连接代理</li>
+                        <li>地理位置智能路由</li>
+                        <li>详细的访问分析报告</li>
+                    </ul>
+                    
+                    <h2>总结</h2>
+                    <p>这个项目展示了Deno在构建现代网络服务方面的优势。通过合理的架构设计和性能优化，一个轻量级的代理服务就能显著改善用户体验。开源社区的积极反馈也证明了项目的价值。</p>
+                    
+                    <p>完整源码可在<a href="https://github.com/lxfight/astrbot2github" target="_blank">GitHub仓库</a>中查看，欢迎Star和Fork！</p>
+                </div>
+                
+                <footer class="post-footer">
+                    <p><a href="../blog.html">← 返回博客列表</a></p>
+                </footer>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 lxfight 个人博客. 所有权利保留.</p>
+        </div>
+    </footer>
+</body>
+</html>

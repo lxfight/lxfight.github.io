@@ -6,7 +6,20 @@
     <title>博客 - lxfight 个人博客</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="modern-light-bg">
+    <!-- 动态背景 -->
+    <div class="modern-bg">
+        <div class="bg-gradient bg-gradient-1"></div>
+        <div class="bg-gradient bg-gradient-2"></div>
+        <div class="bg-gradient bg-gradient-3"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+    </div>
+
     <header>
         <nav>
             <div class="nav-container">
@@ -14,35 +27,83 @@
                 <ul>
                     <li><a href="index.html">首页</a></li>
                     <li><a href="about.html">关于我</a></li>
-                    <li><a href="blog.html">博客</a></li>
+                    <li><a href="blog.html" class="active">博客</a></li>
                 </ul>
             </div>
         </nav>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="hero-content">
-                <h2>所有文章</h2>
-                <p>我的思考和分享</p>
+    <main class="about-main">
+        <section class="hero-modern">
+            <div class="container">
+                <div class="hero-card glass-card">
+                    <h2>技术博客</h2>
+                    <p>分享技术心得与实践经验</p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">4</span>
+                            <span class="stat-label">技术文章</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">2</span>
+                            <span class="stat-label">精选内容</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">350+</span>
+                            <span class="stat-label">项目 Stars</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="blog-posts">
+        <section class="blog-posts-modern">
             <div class="container">
-                <div class="posts-list">
-                    <article class="post-item">
-                        <h3><a href="posts/web-development.html">Web开发学习心得</a></h3>
-                        <p class="post-date">2024-01-15</p>
-                        <p class="post-excerpt">在学习Web开发过程中的一些经验和总结，包括前端框架的选择、最佳实践等...</p>
-                        <a href="posts/web-development.html" class="read-more">阅读更多</a>
+                <div class="blog-posts-list">
+                    <article class="blog-post-item glass-card featured">
+                        <h3><a href="posts/astrbot-plugin-development.html">AstrBot插件开发实战：从零打造RAG记忆系统</a></h3>
+                        <p class="post-date">2024-08-04</p>
+                        <div class="post-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">RAG</span>
+                            <span class="tag">插件开发</span>
+                        </div>
+                        <p class="post-excerpt">深入分析获得110+ stars的AstrBot Mnemosyne插件开发过程，分享RAG技术在聊天机器人长期记忆中的应用实践。从需求分析到架构设计，从核心功能实现到性能优化，全面解析一个成功开源项目的诞生过程...</p>
+                        <a href="posts/astrbot-plugin-development.html" class="read-more">阅读全文 →</a>
                     </article>
                     
-                    <article class="post-item">
-                        <h3><a href="posts/first-post.html">我的第一篇博客</a></h3>
+                    <article class="blog-post-item glass-card featured">
+                        <h3><a href="posts/deno-github-proxy.html">GitHub加速访问服务的Deno实现与架构思考</a></h3>
+                        <p class="post-date">2024-07-28</p>
+                        <div class="post-tags">
+                            <span class="tag">Deno</span>
+                            <span class="tag">TypeScript</span>
+                            <span class="tag">网络代理</span>
+                        </div>
+                        <p class="post-excerpt">基于Deno构建的GitHub加速服务获得178 Stars和633 Forks，详解技术架构和性能优化策略。探讨现代JavaScript运行时的优势，以及如何构建高效的网络代理服务...</p>
+                        <a href="posts/deno-github-proxy.html" class="read-more">阅读全文 →</a>
+                    </article>
+                    
+                    <article class="blog-post-item glass-card">
+                        <h3><a href="posts/web-development.html">Web开发学习心得与最佳实践</a></h3>
+                        <p class="post-date">2024-01-15</p>
+                        <div class="post-tags">
+                            <span class="tag">前端</span>
+                            <span class="tag">经验分享</span>
+                        </div>
+                        <p class="post-excerpt">从基础到进阶，分享Web开发学习路径和实践经验，包括前端框架选择、项目实战等心得体会。涵盖现代前端技术栈的学习建议和开发过程中的常见问题解决方案...</p>
+                        <a href="posts/web-development.html" class="read-more">阅读全文 →</a>
+                    </article>
+                    
+                    <article class="blog-post-item glass-card">
+                        <h3><a href="posts/first-post.html">开源之路：个人技术博客的搭建与思考</a></h3>
                         <p class="post-date">2024-01-01</p>
-                        <p class="post-excerpt">这是我博客的第一篇文章，分享一下建站的经历和对未来的规划...</p>
-                        <a href="posts/first-post.html" class="read-more">阅读更多</a>
+                        <div class="post-tags">
+                            <span class="tag">博客</span>
+                            <span class="tag">GitHub Pages</span>
+                        </div>
+                        <p class="post-excerpt">记录个人博客搭建的技术选型和设计思路，以及对开源分享和技术写作的一些思考。分享静态网站生成、现代化UI设计和内容管理的经验...</p>
+                        <a href="posts/first-post.html" class="read-more">阅读全文 →</a>
                     </article>
                 </div>
             </div>
