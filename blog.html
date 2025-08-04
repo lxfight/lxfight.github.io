@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的个人博客</title>
+    <title>博客 - 我的个人博客</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,24 +23,26 @@
     <main>
         <section class="hero">
             <div class="hero-content">
-                <h2>欢迎来到我的个人博客</h2>
-                <p>分享技术、生活和思考</p>
+                <h2>所有文章</h2>
+                <p>我的思考和分享</p>
             </div>
         </section>
 
-        <section class="recent-posts">
+        <section class="blog-posts">
             <div class="container">
-                <h3>最新文章</h3>
-                <div class="posts-grid">
-                    <article class="post-card">
-                        <h4><a href="posts/first-post.html">我的第一篇博客</a></h4>
-                        <p class="post-date">2024-01-01</p>
-                        <p class="post-excerpt">这是我博客的第一篇文章，分享一下建站的经历...</p>
-                    </article>
-                    <article class="post-card">
-                        <h4><a href="posts/web-development.html">Web开发学习心得</a></h4>
+                <div class="posts-list">
+                    <article class="post-item">
+                        <h3><a href="posts/web-development.html">Web开发学习心得</a></h3>
                         <p class="post-date">2024-01-15</p>
-                        <p class="post-excerpt">在学习Web开发过程中的一些经验和总结...</p>
+                        <p class="post-excerpt">在学习Web开发过程中的一些经验和总结，包括前端框架的选择、最佳实践等...</p>
+                        <a href="posts/web-development.html" class="read-more">阅读更多</a>
+                    </article>
+                    
+                    <article class="post-item">
+                        <h3><a href="posts/first-post.html">我的第一篇博客</a></h3>
+                        <p class="post-date">2024-01-01</p>
+                        <p class="post-excerpt">这是我博客的第一篇文章，分享一下建站的经历和对未来的规划...</p>
+                        <a href="posts/first-post.html" class="read-more">阅读更多</a>
                     </article>
                 </div>
             </div>
