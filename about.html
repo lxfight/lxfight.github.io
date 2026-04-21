@@ -1,279 +1,200 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>关于我 - lxfight 个人博客</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我 - lxfight</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="modern-light-bg">
-    <header>
-        <nav>
-            <div class="nav-container">
-                <h1><a href="index.html">lxfight</a></h1>
-                <ul>
-                    <li><a href="index.html">首页</a></li>
-                    <li><a href="about.html" class="active">关于我</a></li>
-                    <li><a href="blog.html">博客</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
+<body>
+  <!-- Navigation -->
+  <header id="header">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">lxfight</a>
+      <nav>
+        <ul>
+          <li><a href="index.html">首页</a></li>
+          <li><a href="about.html" class="active">关于</a></li>
+          <li><a href="blog.html">博客</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-    <!-- 动态背景 -->
-    <div class="modern-bg">
-        <div class="bg-gradient bg-gradient-1"></div>
-        <div class="bg-gradient bg-gradient-2"></div>
-        <div class="bg-gradient bg-gradient-3"></div>
-        <div class="floating-shapes">
-            <div class="shape shape-1"></div>
-            <div class="shape shape-2"></div>
-            <div class="shape shape-3"></div>
-            <div class="shape shape-4"></div>
-        </div>
+  <!-- About Content -->
+  <main class="about-content">
+    <!-- Profile Header -->
+    <div class="about-header">
+      <div class="about-avatar">LX</div>
+      <h1>lxfight</h1>
+      <p class="title">全栈开发者 · 开源贡献者 · 技术探索者</p>
+      <div class="about-links">
+        <a href="https://github.com/lxfight" target="_blank" rel="noopener">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          GitHub
+        </a>
+        <a href="mailto:contact@lxfight.com">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Email
+        </a>
+      </div>
     </div>
 
-    <main class="about-main">
-        <!-- Hero Section -->
-        <section class="about-hero-modern">
-            <div class="hero-container">
-                <div class="profile-card-modern glass-card">
-                    <div class="profile-avatar-modern">
-                        <div class="avatar-glow"></div>
-                        <div class="avatar-placeholder-modern">LX</div>
-                    </div>
-                    <h1 class="profile-name-modern">lxfight</h1>
-                    <p class="profile-title-modern">全栈开发者 · 开源贡献者 · 技术探索者</p>
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">6+</span>
-                            <span class="stat-label">开源项目</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">350+</span>
-                            <span class="stat-label">GitHub Stars</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">650+</span>
-                            <span class="stat-label">Forks</span>
-                        </div>
-                    </div>
-                    <div class="profile-links-modern">
-                        <a href="https://github.com/lxfight" target="_blank" class="profile-link-modern github">
-                            <span class="link-icon">🔗</span>
-                            <span>GitHub</span>
-                        </a>
-                        <a href="mailto:contact@lxfight.com" class="profile-link-modern email">
-                            <span class="link-icon">✉️</span>
-                            <span>Email</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <!-- About Sections -->
+    <div class="about-grid">
+      <!-- Introduction -->
+      <div class="about-section">
+        <h2>关于我</h2>
+        <p>我是一名专注于现代Web技术栈的全栈开发者，热衷于探索人工智能、云原生架构和开源技术。通过持续学习和实践，致力于创造有价值的技术产品。</p>
+        <p>在代码的世界里，我追求简洁与优雅；在开源的社区中，我乐于分享与协作。这里记录着我的技术探索和成长思考。</p>
+      </div>
 
-        <!-- Content Grid -->
-        <section class="about-content-modern">
-            <div class="container">
-                <div class="content-grid-modern">
-                    <!-- 个人介绍 -->
-                    <div class="content-card-modern glass-card">
-                        <div class="card-header-modern">
-                            <div class="card-icon">👋</div>
-                            <h3>Hello, World!</h3>
-                        </div>
-                        <div class="card-content-modern">
-                            <p>我是一名专注于现代Web技术栈的全栈开发者，热衷于探索人工智能、云原生架构和开源技术。通过持续学习和实践，致力于创造有价值的技术产品。</p>
-                            
-                            <div class="tech-stack-modern">
-                                <h4>🔧 技术栈</h4>
-                                <div class="tech-categories">
-                                    <div class="tech-category-modern">
-                                        <h5>前端生态</h5>
-                                        <div class="tech-tags-modern">
-                                            <span class="tech-tag-modern frontend">Vue.js</span>
-                                            <span class="tech-tag-modern frontend">React</span>
-                                            <span class="tech-tag-modern frontend">TypeScript</span>
-                                            <span class="tech-tag-modern frontend">Tailwind CSS</span>
-                                            <span class="tech-tag-modern frontend">Vite</span>
-                                        </div>
-                                    </div>
-                                    <div class="tech-category-modern">
-                                        <h5>后端架构</h5>
-                                        <div class="tech-tags-modern">
-                                            <span class="tech-tag-modern backend">Python</span>
-                                            <span class="tech-tag-modern backend">Node.js</span>
-                                            <span class="tech-tag-modern backend">Deno</span>
-                                            <span class="tech-tag-modern backend">PostgreSQL</span>
-                                            <span class="tech-tag-modern backend">Redis</span>
-                                        </div>
-                                    </div>
-                                    <div class="tech-category-modern">
-                                        <h5>AI & 工具</h5>
-                                        <div class="tech-tags-modern">
-                                            <span class="tech-tag-modern ai">RAG</span>
-                                            <span class="tech-tag-modern ai">LLM</span>
-                                            <span class="tech-tag-modern ai">Docker</span>
-                                            <span class="tech-tag-modern ai">Git</span>
-                                            <span class="tech-tag-modern ai">GitHub Actions</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 开源项目 -->
-                    <div class="content-card-modern glass-card">
-                        <div class="card-header-modern">
-                            <div class="card-icon">🚀</div>
-                            <h3>开源项目</h3>
-                        </div>
-                        <div class="card-content-modern">
-                            <div class="project-grid">
-                                <div class="project-item-modern featured-project">
-                                    <div class="project-header">
-                                        <h4>🧠 AstrBot Mnemosyne</h4>
-                                        <span class="stars-modern">⭐ 110</span>
-                                    </div>
-                                    <p>基于RAG技术的长期记忆功能插件，为聊天机器人提供智能记忆和知识管理能力。</p>
-                                    <div class="project-tech">
-                                        <span class="tech-badge python">Python</span>
-                                        <span class="tech-badge ai">RAG</span>
-                                        <span class="tech-badge">Vector DB</span>
-                                    </div>
-                                    <div class="project-links">
-                                        <a href="https://github.com/lxfight/astrbot_plugin_mnemosyne" target="_blank" class="project-link-btn">
-                                            <span>查看项目</span>
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <div class="project-item-modern featured-project">
-                                    <div class="project-header">
-                                        <h4>🚀 AstrBot2GitHub</h4>
-                                        <span class="stars-modern popular">⭐ 178</span>
-                                    </div>
-                                    <p>基于Deno的GitHub加速访问服务，解决国内网络访问问题，已被广泛使用。</p>
-                                    <div class="project-tech">
-                                        <span class="tech-badge typescript">TypeScript</span>
-                                        <span class="tech-badge">Deno</span>
-                                        <span class="tech-badge">Proxy</span>
-                                    </div>
-                                    <div class="project-links">
-                                        <a href="https://github.com/lxfight/astrbot2github" target="_blank" class="project-link-btn">
-                                            <span>查看项目</span>
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <div class="project-item-modern">
-                                    <div class="project-header">
-                                        <h4>📚 知识库插件</h4>
-                                        <span class="stars-modern">⭐ 46</span>
-                                    </div>
-                                    <p>文档存储和智能检索系统。</p>
-                                    <div class="project-tech">
-                                        <span class="tech-badge python">Python</span>
-                                        <span class="tech-badge">Search</span>
-                                    </div>
-                                </div>
-
-                                <div class="project-item-modern collaboration">
-                                    <div class="project-header">
-                                        <h4>🤝 Prompt优化器</h4>
-                                        <span class="stars-modern trending">⭐ 12.1k</span>
-                                    </div>
-                                    <p>协作项目：强大的AI提示词优化工具。</p>
-                                    <div class="project-tech">
-                                        <span class="tech-badge typescript">TypeScript</span>
-                                        <span class="tech-badge ai">LLM</span>
-                                    </div>
-                                    <div class="project-links">
-                                        <a href="https://prompt.always200.com" target="_blank" class="project-link-btn demo">
-                                            <span>在线体验</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 兴趣爱好 -->
-                    <div class="content-card-modern glass-card">
-                        <div class="card-header-modern">
-                            <div class="card-icon">🎯</div>
-                            <h3>兴趣领域</h3>
-                        </div>
-                        <div class="card-content-modern">
-                            <div class="interests-grid">
-                                <div class="interest-item">
-                                    <div class="interest-icon">🤖</div>
-                                    <div class="interest-content">
-                                        <h4>人工智能</h4>
-                                        <p>探索RAG、LLM等前沿AI技术在实际场景中的应用</p>
-                                    </div>
-                                </div>
-                                <div class="interest-item">
-                                    <div class="interest-icon">🌐</div>
-                                    <div class="interest-content">
-                                        <h4>开源贡献</h4>
-                                        <p>积极参与开源社区，分享技术方案和经验</p>
-                                    </div>
-                                </div>
-                                <div class="interest-item">
-                                    <div class="interest-icon">📝</div>
-                                    <div class="interest-content">
-                                        <h4>技术写作</h4>
-                                        <p>通过博客和文档分享技术学习心得</p>
-                                    </div>
-                                </div>
-                                <div class="interest-item">
-                                    <div class="interest-icon">🎮</div>
-                                    <div class="interest-content">
-                                        <h4>创新实验</h4>
-                                        <p>尝试新技术栈，构建有趣的小项目</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 联系方式 -->
-                    <div class="content-card-modern glass-card">
-                        <div class="card-header-modern">
-                            <div class="card-icon">📬</div>
-                            <h3>联系交流</h3>
-                        </div>
-                        <div class="card-content-modern">
-                            <p>欢迎与我交流技术话题、讨论开源项目或探讨合作机会。</p>
-                            <div class="contact-methods">
-                                <a href="https://github.com/lxfight" target="_blank" class="contact-method github">
-                                    <div class="contact-icon">🔗</div>
-                                    <div class="contact-info">
-                                        <h4>GitHub</h4>
-                                        <p>查看我的开源项目和代码</p>
-                                    </div>
-                                </a>
-                                <a href="mailto:contact@lxfight.com" class="contact-method email">
-                                    <div class="contact-icon">✉️</div>
-                                    <div class="contact-info">
-                                        <h4>邮箱联系</h4>
-                                        <p>技术交流和商务合作</p>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 lxfight 个人博客. 所有权利保留.</p>
+      <!-- Tech Stack -->
+      <div class="about-section">
+        <h2>技术栈</h2>
+        <div class="tech-category">
+          <h3>前端生态</h3>
+          <div class="tech-tags">
+            <span class="tech-tag">Vue.js</span>
+            <span class="tech-tag">React</span>
+            <span class="tech-tag">TypeScript</span>
+            <span class="tech-tag">Tailwind CSS</span>
+            <span class="tech-tag">Vite</span>
+          </div>
         </div>
-    </footer>
+        <div class="tech-category">
+          <h3>后端架构</h3>
+          <div class="tech-tags">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Node.js</span>
+            <span class="tech-tag">Deno</span>
+            <span class="tech-tag">PostgreSQL</span>
+            <span class="tech-tag">Redis</span>
+          </div>
+        </div>
+        <div class="tech-category">
+          <h3>AI & 工具</h3>
+          <div class="tech-tags">
+            <span class="tech-tag">RAG</span>
+            <span class="tech-tag">LLM</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">Git</span>
+            <span class="tech-tag">GitHub Actions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Open Source Projects -->
+      <div class="about-section">
+        <h2>开源项目</h2>
+        <div class="project-item">
+          <div class="project-header">
+            <h3>AstrBot Mnemosyne</h3>
+            <span class="stars">⭐ 110</span>
+          </div>
+          <p>基于RAG技术的长期记忆功能插件，为聊天机器人提供智能记忆和知识管理能力。</p>
+          <div class="project-tech">
+            <span class="tag">Python</span>
+            <span class="tag">RAG</span>
+            <span class="tag">Vector DB</span>
+          </div>
+        </div>
+        <div class="project-item">
+          <div class="project-header">
+            <h3>AstrBot2GitHub</h3>
+            <span class="stars">⭐ 178</span>
+          </div>
+          <p>基于Deno的GitHub加速访问服务，解决国内网络访问问题，已被广泛使用。</p>
+          <div class="project-tech">
+            <span class="tag">TypeScript</span>
+            <span class="tag">Deno</span>
+            <span class="tag">Proxy</span>
+          </div>
+        </div>
+        <div class="project-item">
+          <div class="project-header">
+            <h3>Prompt优化器</h3>
+            <span class="stars">⭐ 12.1k</span>
+          </div>
+          <p>协作项目：强大的AI提示词优化工具。</p>
+          <div class="project-tech">
+            <span class="tag">TypeScript</span>
+            <span class="tag">LLM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interests -->
+      <div class="about-section">
+        <h2>兴趣领域</h2>
+        <ul class="interests-list">
+          <li>
+            <span class="icon">🤖</span>
+            <div class="content">
+              <h3>人工智能</h3>
+              <p>探索RAG、LLM等前沿AI技术在实际场景中的应用</p>
+            </div>
+          </li>
+          <li>
+            <span class="icon">🌐</span>
+            <div class="content">
+              <h3>开源贡献</h3>
+              <p>积极参与开源社区，分享技术方案和经验</p>
+            </div>
+          </li>
+          <li>
+            <span class="icon">📝</span>
+            <div class="content">
+              <h3>技术写作</h3>
+              <p>通过博客和文档分享技术学习心得</p>
+            </div>
+          </li>
+          <li>
+            <span class="icon">🎮</span>
+            <div class="content">
+              <h3>创新实验</h3>
+              <p>尝试新技术栈，构建有趣的小项目</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2024 lxfight · 用心书写每一篇</p>
+  </footer>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" id="backToTop">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5 12l7-7 7 7"/>
+    </svg>
+  </button>
+
+  <script>
+    // Scroll handling
+    const header = document.getElementById('header');
+    const backToTop = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY > 300;
+      backToTop.classList.toggle('visible', scrolled);
+      header.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
 </body>
 </html>
