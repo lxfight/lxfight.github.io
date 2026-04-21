@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
-  <!-- Navigation -->
   <header id="header">
     <div class="nav-container">
       <a href="../index.html" class="nav-logo">lxfight</a>
@@ -18,17 +18,16 @@
         <ul>
           <li><a href="../index.html">首页</a></li>
           <li><a href="../about.html">关于</a></li>
-          <li><a href="../blog.html">博客</a></li>
+          <li><a href="../blog.html" class="active">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <!-- Article Content -->
   <main class="post-content">
     <header class="post-header">
       <h1>AstrBot插件开发实战：从零打造RAG记忆系统</h1>
-      <p class="post-meta">2024-08-04</p>
+      <p class="post-meta">2024-08-04 · AI 应用</p>
       <div class="post-tags">
         <span class="tag">Python</span>
         <span class="tag">RAG</span>
@@ -37,116 +36,122 @@
     </header>
 
     <div class="post-body">
-      <p>在开发AstrBot Mnemosyne插件的过程中，我深入探索了RAG（Retrieval-Augmented Generation）技术在聊天机器人长期记忆中的应用。今天分享一下从零开始构建这个获得110+ stars的插件的经验。</p>
-
-      <h2>项目背景与动机</h2>
-      <p>传统的聊天机器人在长对话中往往会"忘记"之前的上下文，这严重影响了用户体验。Mnemosyne插件的目标是为AstrBot提供持久化的记忆能力，让机器人能够记住重要的对话内容并在适当时候调用。</p>
-
-      <h2>技术架构设计</h2>
-      <p>核心技术栈包括：</p>
-      <ul>
-        <li><strong>向量数据库</strong>：使用Chroma/FAISS存储文本向量</li>
-        <li><strong>文本嵌入</strong>：集成OpenAI Embeddings API</li>
-        <li><strong>检索策略</strong>：实现语义相似度搜索</li>
-        <li><strong>记忆管理</strong>：自动化的记忆存储和清理机制</li>
-      </ul>
-
-      <h2>关键实现细节</h2>
-
-      <h3>1. 文本预处理与分块</h3>
-      <pre><code>def chunk_text(text: str, max_chunk_size: int = 500) -> List[str]:
-    """将长文本分割成适合向量化的块"""
-    sentences = re.split(r'[.!?。！？]', text)
+      <p>在开发 AstrBot Mnemosyne 插件的过程中，我把很多原本分散的想法真正落成了系统设计。这个插件的目标并不复杂：让聊天机器人具备可持续的长期记忆能力，但要把这件事做得稳定、可控、可维护，里面其实有不少工程问题。</p>
+<p>这篇文章按实际开发路径来复盘，从问题定义、架构设计、关键实现到后续优化。</p>
+<h2>项目背景</h2>
+<p>传统聊天机器人在长对话中最大的体验问题之一，就是上下文记忆能力不足。用户刚说过的话，过一会儿模型就“忘了”；更长期的信息，比如用户偏好、持续任务和历史关系，也很难被稳定利用。</p>
+<p>Mnemosyne 的目标是给 AstrBot 增加一层持久化记忆：</p>
+<ul>
+<li>记住真正重要的对话。</li>
+<li>在合适的时候检索出来。</li>
+<li>不让记忆库无限膨胀。</li>
+<li>尽量降低使用门槛。</li>
+</ul>
+<h2>技术架构</h2>
+<p>核心思路是典型的 RAG，但重点不在“能检索”，而在“检索是否有价值”。</p>
+<ul>
+<li>向量数据库负责存储和召回。</li>
+<li>文本嵌入负责把自然语言转换为可检索表示。</li>
+<li>检索策略负责筛选相关记忆。</li>
+<li>记忆管理负责控制生命周期和质量。</li>
+</ul>
+<h2>关键实现</h2>
+<h3>1. 文本预处理与分块</h3>
+<p>长文本如果不切分，会影响向量化质量和检索粒度。我的做法是按句子粗切，再控制块大小。</p>
+<pre><code class="language-python">def chunk_text(text: str, max_chunk_size: int = 500) -&gt; list[str]:
+    &quot;&quot;&quot;将长文本分割成适合向量化的块&quot;&quot;&quot;
+    sentences = re.split(r&quot;[.!?。！？]&quot;, text)
     chunks = []
-    current_chunk = ""
+    current_chunk = &quot;&quot;
 
     for sentence in sentences:
-        if len(current_chunk + sentence) <= max_chunk_size:
-            current_chunk += sentence + "。"
+        if len(current_chunk + sentence) &lt;= max_chunk_size:
+            current_chunk += sentence + &quot;。&quot;
         else:
             if current_chunk:
                 chunks.append(current_chunk.strip())
-            current_chunk = sentence + "。"
+            current_chunk = sentence + &quot;。&quot;
 
     if current_chunk:
         chunks.append(current_chunk.strip())
 
-    return chunks</code></pre>
-
-      <h3>2. 智能记忆筛选</h3>
-      <p>不是所有对话都需要长期记住。插件实现了基于重要性评分的记忆筛选机制：</p>
-      <pre><code>def calculate_importance_score(message: str) -> float:
-    """计算消息的重要性得分"""
+    return chunks
+</code></pre>
+<h3>2. 记忆筛选</h3>
+<p>并不是所有消息都值得进入长期记忆。真正难的部分，是判断一段对话有没有长期价值。</p>
+<pre><code class="language-python">def calculate_importance_score(message: str) -&gt; float:
+    &quot;&quot;&quot;计算消息的重要性得分&quot;&quot;&quot;
     score = 0.0
 
-    # 包含特定关键词的消息更重要
-    important_keywords = ['喜欢', '讨厌', '记住', '重要', '秘密']
+    important_keywords = [&quot;喜欢&quot;, &quot;讨厌&quot;, &quot;记住&quot;, &quot;重要&quot;, &quot;秘密&quot;]
     for keyword in important_keywords:
         if keyword in message:
             score += 0.2
 
-    # 问答形式的对话更重要
-    if '？' in message or '吗' in message:
+    if &quot;？&quot; in message or &quot;吗&quot; in message:
         score += 0.1
 
-    # 长度适中的消息更有价值
-    if 10 <= len(message) <= 100:
+    if 10 &lt;= len(message) &lt;= 100:
         score += 0.1
 
-    return min(score, 1.0)</code></pre>
-
-      <h3>3. 检索优化策略</h3>
-      <p>为了提高检索准确性，实现了多层次的检索策略：</p>
-      <ul>
-        <li><strong>语义检索</strong>：基于向量相似度的主要检索方式</li>
-        <li><strong>关键词检索</strong>：补充精确匹配的场景</li>
-        <li><strong>时间衰减</strong>：越近期的记忆权重越高</li>
-      </ul>
-
-      <h2>性能优化经验</h2>
-
-      <h3>1. 批量处理</h3>
-      <p>对于大量文本的向量化，采用批量处理显著提升了效率：</p>
-      <pre><code>async def batch_embed_texts(texts: List[str], batch_size: int = 10):
-    """批量生成文本向量"""
+    return min(score, 1.0)
+</code></pre>
+<p>这个评分逻辑不复杂，但很有效。因为在早期版本里，我最常见的问题不是“记不住”，而是“记住了太多没用的东西”。</p>
+<h3>3. 检索优化</h3>
+<p>为了提升召回质量，我没有只依赖单一相似度检索，而是做了几层组合：</p>
+<ul>
+<li>语义检索作为主路径。</li>
+<li>关键词匹配作为补充。</li>
+<li>时间衰减作为排序因子，让近期内容更容易被命中。</li>
+</ul>
+<p>这几层叠加起来的好处是：系统更像“会想起重点”，而不是“随机翻档案”。</p>
+<h2>性能优化</h2>
+<h3>批量向量化</h3>
+<p>如果逐条调用嵌入接口，吞吐和成本都不理想。批量处理可以明显改善这一点。</p>
+<pre><code class="language-python">async def batch_embed_texts(texts: list[str], batch_size: int = 10):
+    &quot;&quot;&quot;批量生成文本向量&quot;&quot;&quot;
     embeddings = []
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i:i + batch_size]
-        batch_embeddings = await client.embeddings.create(
-            model="text-embedding-ada-002",
+    for index in range(0, len(texts), batch_size):
+        batch = texts[index:index + batch_size]
+        result = await client.embeddings.create(
+            model=&quot;text-embedding-ada-002&quot;,
             input=batch
         )
-        embeddings.extend([e.embedding for e in batch_embeddings.data])
-    return embeddings</code></pre>
+        embeddings.extend(item.embedding for item in result.data)
+    return embeddings
+</code></pre>
+<h3>缓存</h3>
+<p>对重复向量化请求和高频检索结果做缓存后，响应速度提升很明显，也能减少外部 API 消耗。</p>
+<h2>发布后的迭代</h2>
+<p>项目开源之后，我陆续做了几轮比较关键的调整：</p>
+<ul>
+<li>增加记忆容量限制，避免存储持续膨胀。</li>
+<li>优化相关性排序，减少“看起来像相关，其实没用”的结果。</li>
+<li>增加导出能力，方便用户自己管理记忆库。</li>
+<li>支持更多嵌入模型，降低使用成本。</li>
+</ul>
+<h2>经验总结</h2>
+<p>做这类插件时，我觉得最重要的不是模型能力本身，而是系统边界。</p>
+<ul>
+<li>什么内容应该记住。</li>
+<li>记住后何时召回。</li>
+<li>错误召回时怎么尽量降低干扰。</li>
+<li>存储规模如何保持可控。</li>
+</ul>
+<p>如果这些问题没有想清楚，只是把“向量库 + Embedding + 检索”拼起来，用户体验通常不会稳定。</p>
+<h2>未来规划</h2>
+<p>接下来我还想继续补几个方向：</p>
+<ul>
+<li>支持图片和文件的记忆存储。</li>
+<li>增加短期记忆和长期记忆分层。</li>
+<li>加入主动遗忘机制。</li>
+<li>提供更多向量数据库选项。</li>
+</ul>
+<h2>总结</h2>
+<p>AstrBot Mnemosyne 是一次很扎实的 AI 工程实践。它让我更明确地意识到，RAG 不只是“把文档喂给模型”，而是一整套围绕记忆质量、检索效果和系统维护成本展开的设计问题。</p>
+<p>如果你也在做类似的功能，可以先把最小闭环跑通：存储、筛选、召回，再逐步补优化层。这样比一开始追求全功能更稳。</p>
+<p>项目地址：<a href="https://github.com/lxfight/astrbot_plugin_mnemosyne">@lxfight/astrbot_plugin_mnemosyne</a></p>
 
-      <h3>2. 缓存机制</h3>
-      <p>实现了LRU缓存来避免重复的向量化计算，将响应速度提升了60%。</p>
-
-      <h2>用户反馈与迭代</h2>
-      <p>插件发布后收到了很多用户反馈，主要改进包括：</p>
-      <ul>
-        <li>增加了记忆容量限制，避免存储空间无限增长</li>
-        <li>优化了检索结果的相关性排序算法</li>
-        <li>添加了记忆导出功能，方便用户管理</li>
-        <li>支持多种嵌入模型，降低使用成本</li>
-      </ul>
-
-      <h2>开源影响与社区贡献</h2>
-      <p>该项目目前已获得110+ GitHub Stars，被多个AstrBot用户采用。通过开源，我不仅帮助了其他开发者，也从社区获得了宝贵的反馈和改进建议。</p>
-
-      <h2>未来规划</h2>
-      <p>接下来计划加入以下功能：</p>
-      <ul>
-        <li>支持图片和文件的记忆存储</li>
-        <li>实现分层记忆结构（短期/长期记忆）</li>
-        <li>添加记忆主动遗忘机制</li>
-        <li>集成更多向量数据库选项</li>
-      </ul>
-
-      <h2>总结</h2>
-      <p>开发AstrBot Mnemosyne插件是一次很有价值的技术实践。RAG技术在聊天机器人场景下的应用还有很大的探索空间，希望这次分享能为其他开发者提供一些参考。</p>
-
-      <p>如果你对插件开发或RAG技术感兴趣，欢迎访问<a href="https://github.com/lxfight/astrbot_plugin_mnemosyne" target="_blank" rel="noopener">项目仓库</a>了解更多细节！</p>
     </div>
 
     <footer class="post-footer">
@@ -159,12 +164,10 @@
     </footer>
   </main>
 
-  <!-- Footer -->
   <footer>
-    <p>© 2024 lxfight · 用心书写每一篇</p>
+    <p>© 2026 lxfight · 用心书写每一篇</p>
   </footer>
 
-  <!-- Back to Top -->
   <button class="back-to-top" id="backToTop">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 19V5M5 12l7-7 7 7"/>

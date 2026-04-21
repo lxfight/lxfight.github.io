@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
-  <!-- Navigation -->
   <header id="header">
     <div class="nav-container">
       <a href="../index.html" class="nav-logo">lxfight</a>
@@ -18,17 +18,16 @@
         <ul>
           <li><a href="../index.html">首页</a></li>
           <li><a href="../about.html">关于</a></li>
-          <li><a href="../blog.html">博客</a></li>
+          <li><a href="../blog.html" class="active">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <!-- Article Content -->
   <main class="post-content">
     <header class="post-header">
       <h1>GitHub加速访问服务的Deno实现与架构思考</h1>
-      <p class="post-meta">2024-07-28</p>
+      <p class="post-meta">2024-07-28 · 后端工程</p>
       <div class="post-tags">
         <span class="tag">Deno</span>
         <span class="tag">TypeScript</span>
@@ -37,97 +36,91 @@
     </header>
 
     <div class="post-body">
-      <p>AstrBot2GitHub项目是我开发的一个基于Deno的GitHub加速访问服务，目前已获得178 Stars和633 Forks。这篇文章将深入分析项目的技术架构和设计思路。</p>
+      <p>AstrBot2GitHub 是我开发的一个基于 Deno 的 GitHub 加速访问服务。这个项目的出发点很直接：在国内环境里，很多依赖 GitHub API 或 Raw 资源的工具，经常会因为网络问题导致体验不稳定。</p>
+<p>这篇文章想拆开讲三件事：为什么选择 Deno、核心代理架构怎么设计、以及做成可长期维护的服务时遇到过哪些工程问题。</p>
+<h2>项目背景</h2>
+<p>在需要频繁访问 GitHub API、Release 资源或 Raw 文件的场景里，网络抖动会明显拖慢开发和使用体验。与其把每个调用方都做重试，不如在中间增加一层稳定代理，把缓存、限流和路由逻辑统一收口。</p>
+<h2>为什么选择 Deno</h2>
+<p>相对于 Node.js，Deno 在这个项目里有几个非常直接的优势：</p>
+<ul>
+<li>原生支持 TypeScript，减少额外构建配置。</li>
+<li>自带现代 Web API，<code>fetch</code>、<code>URL</code>、<code>Request</code>、<code>Response</code> 开箱即用。</li>
+<li>权限模型更明确，默认更偏安全。</li>
+<li>标准库可读性高，适合快速实现网络服务。</li>
+</ul>
+<h2>核心架构设计</h2>
+<h3>1. 请求路由与目标地址映射</h3>
+<p>核心逻辑是把请求路径映射到不同的 GitHub 上游地址。</p>
+<pre><code class="language-ts">import { serve } from &quot;https://deno.land/std@0.208.0/http/server.ts&quot;;
 
-      <h2>项目背景</h2>
-      <p>国内访问GitHub经常面临网络连接不稳定的问题，特别是在使用AstrBot等需要频繁访问GitHub API的场景下。为了解决这个痛点，我开发了这个轻量级的代理服务。</p>
+const GITHUB_API_BASE = &quot;https://api.github.com&quot;;
+const GITHUB_RAW_BASE = &quot;https://raw.githubusercontent.com&quot;;
 
-      <h2>为什么选择Deno？</h2>
-      <p>相比Node.js，Deno在这个项目中有几个显著优势：</p>
-      <ul>
-        <li><strong>原生TypeScript支持</strong>：无需额外配置即可运行TS代码</li>
-        <li><strong>内置Web API</strong>：fetch、URL等现代Web标准开箱即用</li>
-        <li><strong>安全性</strong>：默认沙盒环境，权限细粒度控制</li>
-        <li><strong>标准库质量高</strong>：HTTP服务器实现简洁高效</li>
-      </ul>
-
-      <h2>核心架构设计</h2>
-
-      <h3>1. 请求路由与代理</h3>
-      <p>核心的代理逻辑实现：</p>
-      <pre><code>import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-
-const GITHUB_API_BASE = "https://api.github.com";
-const GITHUB_RAW_BASE = "https://raw.githubusercontent.com";
-
-async function handleRequest(request: Request): Promise<Response> {
+async function handleRequest(request: Request): Promise&lt;Response&gt; {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  // 路由匹配
   let targetUrl: string;
-  if (path.startsWith('/api/')) {
-    targetUrl = `${GITHUB_API_BASE}${path.replace('/api', '')}`;
-  } else if (path.startsWith('/raw/')) {
-    targetUrl = `${GITHUB_RAW_BASE}${path.replace('/raw', '')}`;
+
+  if (path.startsWith(&quot;/api/&quot;)) {
+    targetUrl = `${GITHUB_API_BASE}${path.replace(&quot;/api&quot;, &quot;&quot;)}`;
+  } else if (path.startsWith(&quot;/raw/&quot;)) {
+    targetUrl = `${GITHUB_RAW_BASE}${path.replace(&quot;/raw&quot;, &quot;&quot;)}`;
   } else {
-    return new Response('Not Found', { status: 404 });
+    return new Response(&quot;Not Found&quot;, { status: 404 });
   }
 
-  // 代理请求
-  return await proxyRequest(request, targetUrl);
-}</code></pre>
-
-      <h3>2. 智能缓存策略</h3>
-      <p>为了减少对GitHub API的直接请求，实现了多层缓存机制：</p>
-      <pre><code>interface CacheEntry {
-  data: any;
+  return proxyRequest(request, targetUrl);
+}
+</code></pre>
+<h3>2. 多层缓存</h3>
+<p>缓存不是“顺手加一下”的优化，而是这类服务能不能跑稳的核心。</p>
+<pre><code class="language-ts">interface CacheEntry {
+  data: unknown;
   timestamp: number;
   etag?: string;
 }
 
 class SmartCache {
-  private cache = new Map<string, CacheEntry>();
-  private readonly TTL = 5 * 60 * 1000; // 5分钟
+  private cache = new Map&lt;string, CacheEntry&gt;();
+  private readonly ttl = 5 * 60 * 1000;
 
-  async get(key: string, etag?: string): Promise<CacheEntry | null> {
+  get(key: string, etag?: string): CacheEntry | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
 
-    // 检查时间过期
-    if (Date.now() - entry.timestamp > this.TTL) {
+    if (Date.now() - entry.timestamp &gt; this.ttl) {
       this.cache.delete(key);
       return null;
     }
 
-    // ETag匹配
-    if (etag && entry.etag !== etag) {
+    if (etag &amp;&amp; entry.etag !== etag) {
       return null;
     }
 
     return entry;
   }
 
-  set(key: string, data: any, etag?: string): void {
+  set(key: string, data: unknown, etag?: string): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
       etag
     });
   }
-}</code></pre>
-
-      <h3>3. 请求限流与熔断</h3>
-      <p>为了避免过度请求GitHub API，实现了令牌桶算法：</p>
-      <pre><code>class RateLimiter {
+}
+</code></pre>
+<p>这里的目标不是追求极致复杂，而是优先减少上游压力和重复请求。</p>
+<h3>3. 限流和熔断</h3>
+<p>代理一旦变成公共入口，就必须考虑流量突增和异常请求。</p>
+<pre><code class="language-ts">class RateLimiter {
   private tokens: number;
   private lastRefill: number;
-  private readonly capacity: number;
-  private readonly refillRate: number;
 
-  constructor(capacity: number, refillRate: number) {
-    this.capacity = capacity;
-    this.refillRate = refillRate;
+  constructor(
+    private readonly capacity: number,
+    private readonly refillRate: number
+  ) {
     this.tokens = capacity;
     this.lastRefill = Date.now();
   }
@@ -135,8 +128,8 @@ class SmartCache {
   tryConsume(): boolean {
     this.refill();
 
-    if (this.tokens >= 1) {
-      this.tokens--;
+    if (this.tokens &gt;= 1) {
+      this.tokens -= 1;
       return true;
     }
 
@@ -145,28 +138,27 @@ class SmartCache {
 
   private refill(): void {
     const now = Date.now();
-    const timePassed = (now - this.lastRefill) / 1000;
-    const tokensToAdd = timePassed * this.refillRate;
+    const elapsed = (now - this.lastRefill) / 1000;
+    const replenished = elapsed * this.refillRate;
 
-    this.tokens = Math.min(this.capacity, this.tokens + tokensToAdd);
+    this.tokens = Math.min(this.capacity, this.tokens + replenished);
     this.lastRefill = now;
   }
-}</code></pre>
-
-      <h2>性能优化实践</h2>
-
-      <h3>1. 连接池管理</h3>
-      <p>使用Keep-Alive连接减少TCP握手开销：</p>
-      <pre><code>const client = new HTTPClient({
+}
+</code></pre>
+<h2>性能优化实践</h2>
+<h3>连接复用</h3>
+<p>对这类 I/O 密集型服务来说，连接复用的收益非常明显。减少重复握手开销以后，尾延迟会稳定很多。</p>
+<pre><code class="language-ts">const client = new HTTPClient({
   keepAlive: true,
   maxIdleConnections: 100,
   maxIdleConnectionsPerHost: 10,
   idleTimeout: 30000
-});</code></pre>
-
-      <h3>2. 响应流式处理</h3>
-      <p>对于大文件下载，使用流式代理避免内存溢出：</p>
-      <pre><code>async function streamProxy(request: Request, targetUrl: string): Promise<Response> {
+});
+</code></pre>
+<h3>流式转发</h3>
+<p>下载大文件时，流式处理比先把整个响应读入内存更稳。</p>
+<pre><code class="language-ts">async function streamProxy(request: Request, targetUrl: string): Promise&lt;Response&gt; {
   const response = await fetch(targetUrl, {
     method: request.method,
     headers: request.headers,
@@ -177,15 +169,15 @@ class SmartCache {
     status: response.status,
     headers: response.headers
   });
-}</code></pre>
-
-      <h2>监控与日志</h2>
-      <p>集成了结构化日志和性能监控：</p>
-      <pre><code>interface LogContext {
+}
+</code></pre>
+<h2>工程化补充</h2>
+<h3>日志和监控</h3>
+<p>只看“服务能跑”是不够的，至少要知道请求量、状态码和耗时。</p>
+<pre><code class="language-ts">interface LogContext {
   requestId: string;
   method: string;
   path: string;
-  userAgent?: string;
   responseTime?: number;
   statusCode?: number;
 }
@@ -193,16 +185,15 @@ class SmartCache {
 function logRequest(context: LogContext): void {
   console.log(JSON.stringify({
     timestamp: new Date().toISOString(),
-    level: 'INFO',
-    message: 'Request processed',
+    level: &quot;INFO&quot;,
+    message: &quot;Request processed&quot;,
     ...context
   }));
-}</code></pre>
-
-      <h2>部署与运维</h2>
-
-      <h3>1. 容器化部署</h3>
-      <pre><code>FROM denoland/deno:1.40.0
+}
+</code></pre>
+<h3>部署方式</h3>
+<p>用容器化来固定运行环境，是这类小服务最省心的做法之一。</p>
+<pre><code class="language-dockerfile">FROM denoland/deno:1.40.0
 
 WORKDIR /app
 COPY . .
@@ -211,78 +202,45 @@ RUN deno cache src/main.ts
 
 EXPOSE 8000
 
-CMD ["run", "--allow-net", "--allow-env", "src/main.ts"]</code></pre>
-
-      <h3>2. 健康检查</h3>
-      <p>实现了简单的健康检查端点：</p>
-      <pre><code>async function healthCheck(): Promise<Response> {
-  const status = {
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: Deno.pid ? process.uptime() : 0,
-    memory: Deno.memoryUsage?.() || {}
-  };
-
-  return Response.json(status);
-}</code></pre>
-
-      <h2>社区反响与改进</h2>
-      <p>项目开源后收到了很多用户反馈：</p>
-      <ul>
-        <li>优化了错误处理机制，提供更友好的错误信息</li>
-        <li>添加了配置文件支持，便于自定义部署</li>
-        <li>实现了多个GitHub镜像源的自动切换</li>
-        <li>增加了请求统计和监控面板</li>
-      </ul>
-
-      <h2>技术挑战与解决方案</h2>
-
-      <h3>1. CORS处理</h3>
-      <p>需要正确处理跨域请求：</p>
-      <pre><code>function addCorsHeaders(response: Response): Response {
+CMD [&quot;run&quot;, &quot;--allow-net&quot;, &quot;--allow-env&quot;, &quot;src/main.ts&quot;]
+</code></pre>
+<h2>遇到过的几个问题</h2>
+<h3>CORS</h3>
+<p>代理层经常需要补齐跨域头，不然前端接入会遇到一堆额外限制。</p>
+<pre><code class="language-ts">function addCorsHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
-  headers.set('Access-Control-Allow-Origin', '*');
-  headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  headers.set(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);
+  headers.set(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, DELETE, OPTIONS&quot;);
+  headers.set(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);
 
   return new Response(response.body, {
     status: response.status,
     headers
   });
-}</code></pre>
-
-      <h3>2. 认证令牌处理</h3>
-      <p>安全地转发GitHub认证信息：</p>
-      <pre><code>function processAuthHeaders(headers: Headers): Headers {
-  const newHeaders = new Headers();
+}
+</code></pre>
+<h3>认证透传</h3>
+<p>代理认证信息时，既要保证功能正确，也要避免把不该转发的头无脑带出去。</p>
+<pre><code class="language-ts">function processAuthHeaders(headers: Headers): Headers {
+  const nextHeaders = new Headers();
 
   for (const [key, value] of headers.entries()) {
-    if (key.toLowerCase() === 'authorization') {
-      // 验证令牌格式
-      if (value.startsWith('token ') || value.startsWith('Bearer ')) {
-        newHeaders.set(key, value);
+    if (key.toLowerCase() === &quot;authorization&quot;) {
+      if (value.startsWith(&quot;token &quot;) || value.startsWith(&quot;Bearer &quot;)) {
+        nextHeaders.set(key, value);
       }
-    } else if (!key.toLowerCase().startsWith('x-forwarded-')) {
-      newHeaders.set(key, value);
+    } else if (!key.toLowerCase().startsWith(&quot;x-forwarded-&quot;)) {
+      nextHeaders.set(key, value);
     }
   }
 
-  return newHeaders;
-}</code></pre>
+  return nextHeaders;
+}
+</code></pre>
+<h2>总结</h2>
+<p>这个项目让我更加确定一件事：对很多中小型网络服务来说，关键不是技术栈本身有多新，而是路径是否清晰，边界是否稳定，运维成本是否可控。</p>
+<p>Deno 在这类代理服务里很好用，尤其适合想要快速落地一个现代 TypeScript 网络服务的场景。如果你也在做类似项目，建议从最小可用代理开始，再逐步加缓存、限流和监控，不要一开始就把系统做得过度复杂。</p>
 
-      <h2>未来规划</h2>
-      <p>计划在下个版本中加入：</p>
-      <ul>
-        <li>GraphQL API支持</li>
-        <li>WebSocket连接代理</li>
-        <li>地理位置智能路由</li>
-        <li>详细的访问分析报告</li>
-      </ul>
-
-      <h2>总结</h2>
-      <p>这个项目展示了Deno在构建现代网络服务方面的优势。通过合理的架构设计和性能优化，一个轻量级的代理服务就能显著改善用户体验。开源社区的积极反馈也证明了项目的价值。</p>
-
-      <p>完整源码可在<a href="https://github.com/lxfight/astrbot2github" target="_blank" rel="noopener">GitHub仓库</a>中查看，欢迎Star和Fork！</p>
     </div>
 
     <footer class="post-footer">
@@ -295,12 +253,10 @@ CMD ["run", "--allow-net", "--allow-env", "src/main.ts"]</code></pre>
     </footer>
   </main>
 
-  <!-- Footer -->
   <footer>
-    <p>© 2024 lxfight · 用心书写每一篇</p>
+    <p>© 2026 lxfight · 用心书写每一篇</p>
   </footer>
 
-  <!-- Back to Top -->
   <button class="back-to-top" id="backToTop">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 19V5M5 12l7-7 7 7"/>

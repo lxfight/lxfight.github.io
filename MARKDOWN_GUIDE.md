@@ -1,6 +1,20 @@
 # Markdown 博客使用指南
 
-这个项目现在支持使用 Markdown 编写文章，并自动转换为 HTML 格式。
+现在这个站点已经完整支持“Markdown 作为内容源，HTML 作为构建产物”的静态博客流程。
+
+## 工作方式
+
+你只需要维护两类文件：
+
+- `posts-md/*.md`
+- 页面模板文件
+
+运行 `npm run build` 之后，构建脚本会自动生成：
+
+- `posts/*.html`
+- `index.html`
+- `blog.html`
+- `posts.json`
 
 ## 安装依赖
 
@@ -8,71 +22,79 @@
 npm install
 ```
 
-## 使用方法
+## 编写文章
 
-### 1. 编写文章
-
-在 `posts-md/` 目录下创建 `.md` 文件，文件需要包含 Front Matter：
+在 `posts-md/` 目录下创建 `.md` 文件，并写入 Front Matter。
 
 ```markdown
 ---
 title: 文章标题
-date: 2024-01-01
-category: 分类
+date: "2026-04-21"
+category: 技术分享
+excerpt: 文章摘要，会用于首页和博客列表。
 tags:
   - 标签1
   - 标签2
+featured: true
+badge: 精选
 ---
 
-这里是文章内容...
+这里是正文内容。
 ```
 
-### 2. 构建文章
-
-运行构建命令将 Markdown 转换为 HTML：
+## 构建
 
 ```bash
 npm run build
 ```
 
-生成的 HTML 文件会保存在 `posts/` 目录下。
-
-### 3. 开发模式
-
-如果要实时监听文件变化并自动构建：
+## 开发模式
 
 ```bash
 npm run dev
 ```
 
-## 目录结构
+监听模式会在以下文件变化时自动重建：
 
-```
-├── posts-md/          # Markdown 源文件
-├── posts/             # 生成的 HTML 文件
-├── template.html      # 文章模板（自动生成）
-├── build.js           # 构建脚本
-└── package.json       # 项目配置
-```
+- `posts-md/*.md`
+- `template.html`
+- `index.template.html`
+- `blog.template.html`
 
-## Front Matter 字段说明
+## Front Matter 字段
 
-- `title`: 文章标题（必需）
-- `date`: 发布日期（可选，默认为当前日期）
-- `category`: 文章分类（可选，默认为"技术分享"）
-- `tags`: 标签数组（可选）
+- `title`: 文章标题，建议必填。
+- `date`: 发布日期，建议使用 `YYYY-MM-DD`。
+- `category`: 文章分类，会显示在文章页。
+- `excerpt`: 摘要，会显示在首页和博客列表。
+- `tags`: 标签数组。
+- `featured`: 是否高亮显示在博客列表中。
+- `badge`: 徽标文案，例如“精选”或“热门”。
 
-## 功能特性
+## 模板文件
 
-- ✅ Markdown 到 HTML 转换
-- ✅ 语法高亮支持
-- ✅ Front Matter 元数据
-- ✅ 文件监听模式
-- ✅ 自动生成文章模板
-- ✅ 标签和分类支持
+- `template.html`: 文章详情页模板。
+- `index.template.html`: 首页模板。
+- `blog.template.html`: 博客列表页模板。
 
-## 注意事项
+模板中的占位符由构建脚本替换，所以不要直接去手改生成后的 `index.html` 和 `blog.html`。
 
-- 确保 Markdown 文件的 Front Matter 格式正确
-- 图片路径建议使用相对路径
-- 代码块支持语法高亮，请指定语言类型
+## 结果文件
+
+构建后输出的页面仍然是纯静态网页，可以直接部署到 GitHub Pages 或任意静态托管平台。
+
+如果你只是浏览站点，打开生成后的 HTML 即可。
+如果你修改了 Markdown 内容，记得重新执行一次 `npm run build`。
+
+## GitHub 自动发布
+
+仓库内已经提供 GitHub Pages 工作流：`.github/workflows/deploy-pages.yml`。
+
+它会在推送到 `main` 后自动：
+
+- 安装依赖
+- 执行 `npm run build`
+- 打包最终静态站点
+- 部署到 GitHub Pages
+
+首次启用需要在仓库设置里把 Pages 的发布来源切换为 `GitHub Actions`。

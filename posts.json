@@ -1,0 +1,61 @@
+[
+  {
+    "slug": "astrbot-plugin-development",
+    "title": "AstrBot插件开发实战：从零打造RAG记忆系统",
+    "date": "2024-08-04",
+    "category": "AI 应用",
+    "tags": [
+      "Python",
+      "RAG",
+      "插件开发"
+    ],
+    "excerpt": "深入分析获得 110+ stars 的 AstrBot Mnemosyne 插件开发过程，分享 RAG 技术在聊天机器人长期记忆中的应用实践。",
+    "badge": "精选",
+    "featured": true,
+    "url": "posts/astrbot-plugin-development.html"
+  },
+  {
+    "slug": "deno-github-proxy",
+    "title": "GitHub加速访问服务的Deno实现与架构思考",
+    "date": "2024-07-28",
+    "category": "后端工程",
+    "tags": [
+      "Deno",
+      "TypeScript",
+      "网络代理"
+    ],
+    "excerpt": "基于 Deno 构建的 GitHub 加速服务获得 178 Stars 和 633 Forks，本文拆解它的技术架构和性能优化思路。",
+    "badge": "热门",
+    "featured": true,
+    "url": "posts/deno-github-proxy.html"
+  },
+  {
+    "slug": "web-development",
+    "title": "Web开发学习心得与最佳实践",
+    "date": "2024-01-15",
+    "category": "前端成长",
+    "tags": [
+      "前端",
+      "经验分享"
+    ],
+    "excerpt": "从基础到进阶，分享 Web 开发学习路径和实践经验，包括前端框架选择、项目实战等心得体会。",
+    "badge": "",
+    "featured": false,
+    "url": "posts/web-development.html"
+  },
+  {
+    "slug": "first-post",
+    "title": "开源之路：个人技术博客的搭建与思考",
+    "date": "2024-01-01",
+    "category": "博客建设",
+    "tags": [
+      "博客",
+      "GitHub Pages",
+      "开源分享"
+    ],
+    "excerpt": "记录个人博客搭建的技术选型和设计思路，以及对开源分享和技术写作的一些思考。",
+    "badge": "",
+    "featured": false,
+    "url": "posts/first-post.html"
+  }
+]

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>lxfight - 技术博客</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header id="header">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">lxfight</a>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="active">首页</a></li>
+          <li><a href="about.html">关于</a></li>
+          <li><a href="blog.html">博客</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <h2>在代码与文字间<br>寻找平衡</h2>
+      <p>分享全栈开发、开源项目与技术思考</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">6+</span>
+          <span class="stat-label">开源项目</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">350+</span>
+          <span class="stat-label">GitHub Stars</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{articleCount}}</span>
+          <span class="stat-label">技术文章</span>
+        </div>
+      </div>
+      <div class="scroll-hint">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="recent-posts">
+    <div class="section-header">
+      <h2 class="section-title">最新文章</h2>
+    </div>
+    <div class="posts-grid">
+      {{recentPosts}}
+    </div>
+  </section>
+
+  <footer>
+    <p>© {{currentYear}} lxfight · 用心书写每一篇</p>
+  </footer>
+
+  <button class="back-to-top" id="backToTop">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5 12l7-7 7 7"/>
+    </svg>
+  </button>
+
+  <script>
+    const header = document.getElementById('header');
+    const backToTop = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY > 300;
+      backToTop.classList.toggle('visible', scrolled);
+      header.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationDelay = `${index * 100}ms`;
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.post-card').forEach(card => {
+      observer.observe(card);
+    });
+  </script>
+</body>
+</html>

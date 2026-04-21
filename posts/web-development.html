@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
-  <!-- Navigation -->
   <header id="header">
     <div class="nav-container">
       <a href="../index.html" class="nav-logo">lxfight</a>
@@ -18,17 +18,16 @@
         <ul>
           <li><a href="../index.html">首页</a></li>
           <li><a href="../about.html">关于</a></li>
-          <li><a href="../blog.html">博客</a></li>
+          <li><a href="../blog.html" class="active">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <!-- Article Content -->
   <main class="post-content">
     <header class="post-header">
       <h1>Web开发学习心得与最佳实践</h1>
-      <p class="post-meta">2024-01-15</p>
+      <p class="post-meta">2024-01-15 · 前端成长</p>
       <div class="post-tags">
         <span class="tag">前端</span>
         <span class="tag">经验分享</span>
@@ -36,31 +35,55 @@
     </header>
 
     <div class="post-body">
-      <p>在过去的几个月里，我一直在深入学习Web开发技术。今天想和大家分享一些学习过程中的心得体会。</p>
+      <p>在过去的几个月里，我一直在系统学习 Web 开发。回头看，这条路最难的不是技术点本身，而是如何建立一条稳定、可持续的学习路径。这里整理一些我自己验证过的经验。</p>
+<h2>基础永远重要</h2>
+<p>无论最后使用 React、Vue 还是其他框架，HTML、CSS 和 JavaScript 的基础都绕不过去。</p>
+<p>很多初学者一上来就追新框架，但基础薄弱时，问题会被不断放大：</p>
+<ul>
+<li>看不懂组件背后的 DOM 和事件流。</li>
+<li>无法判断样式问题到底来自布局还是框架封装。</li>
+<li>调试时只能依赖猜测，而不是定位原因。</li>
+</ul>
+<p>基础扎实的直接收益是：学新技术更快，排错更稳，换技术栈时迁移成本更低。</p>
+<h2>一条更稳的学习路径</h2>
+<p>如果让我重新来一次，我会建议按下面的顺序推进：</p>
+<ol>
+<li>掌握 HTML、CSS、JavaScript 基础。</li>
+<li>学一个主流前端框架，React 或 Vue 都可以。</li>
+<li>补上 Node.js 和接口调用等后端基础。</li>
+<li>学数据库和数据建模。</li>
+<li>熟练使用 Git，把版本管理当成日常习惯。</li>
+</ol>
+<p>这个顺序的关键不在于“标准答案”，而在于每一步都能接到下一步，避免知识点散落。</p>
+<h2>实战项目比刷概念更有效</h2>
+<p>理论学习当然有价值，但真正让知识固定下来的，还是项目。</p>
+<p>每学完一个新技术，我都会尽量做一个最小可运行项目，比如：</p>
+<ul>
+<li>一个响应式落地页，用来练布局和组件拆分。</li>
+<li>一个带接口请求的小应用，用来练状态管理和异步流程。</li>
+<li>一个后台管理页，用来练表单、表格和权限逻辑。</li>
+</ul>
+<p>项目不需要大，但一定要能跑、能改、能复盘。</p>
+<h2>学会做取舍</h2>
+<p>Web 技术更新很快，保持开放很重要，但盲目追新会让人长期停留在“知道很多名词，却很难真正交付”的状态。</p>
+<p>我现在更看重这些判断标准：</p>
+<ul>
+<li>这个技术是否解决当前问题。</li>
+<li>团队或个人是否能长期维护。</li>
+<li>学习投入是否和业务收益匹配。</li>
+</ul>
+<p>“适合当前项目”通常比“最新最热门”更重要。</p>
+<h2>一些实用建议</h2>
+<ul>
+<li>别跳过浏览器开发者工具，它几乎是前端工程师的第二终端。</li>
+<li>尽早养成拆组件和整理样式的习惯。</li>
+<li>把常见问题写成自己的笔记，而不是每次重新搜索。</li>
+<li>定期回头重构旧项目，能很直观看到自己的成长。</li>
+</ul>
+<h2>总结</h2>
+<p>Web 开发是一个门槛不高、上限很高的领域。学习过程中最值得投入的，不是追逐每一个热点，而是建立一套可以长期复用的认知框架和实践节奏。</p>
+<p>如果你也在这条路上，建议从基础出发，尽快做项目，并且持续复盘。长期看，这比任何速成路线都更可靠。</p>
 
-      <h2>基础的重要性</h2>
-      <p>无论是学习哪种前端框架，HTML、CSS和JavaScript的基础都是不可或缺的。我发现很多初学者急于学习流行的框架，却忽略了基础知识的重要性。扎实的基础会让你在后续的学习中事半功倍。</p>
-
-      <h2>选择合适的学习路径</h2>
-      <p>Web开发的技术栈非常丰富，对于初学者来说可能会感到迷茫。我的建议是：</p>
-      <ul>
-        <li>先掌握HTML、CSS、JavaScript基础</li>
-        <li>学习一个前端框架（React或Vue都是不错的选择）</li>
-        <li>了解基本的后端知识（Node.js是个好起点）</li>
-        <li>学习数据库操作</li>
-        <li>掌握版本控制工具Git</li>
-      </ul>
-
-      <h2>实践项目的价值</h2>
-      <p>理论学习固然重要，但实践项目才是检验学习成果的最好方式。我建议每学完一个新技术，就用它来完成一个小项目。这不仅能巩固知识，还能建立你的作品集。</p>
-
-      <h2>保持学习的热情</h2>
-      <p>Web开发技术更新很快，新的框架和工具层出不穷。保持学习的热情和开放的心态非常重要。但也不要盲目追求新技术，选择适合自己项目需求的技术栈才是明智的选择。</p>
-
-      <h2>总结</h2>
-      <p>Web开发是一个充满挑战但也非常有趣的领域。通过不断学习和实践，你会发现自己能够创造出越来越复杂和精美的网站。记住，每个优秀的开发者都是从第一行代码开始的。</p>
-
-      <p>希望这些心得对正在学习Web开发的你有所帮助。如果你有任何问题或想法，欢迎在评论区留言交流！</p>
     </div>
 
     <footer class="post-footer">
@@ -73,12 +96,10 @@
     </footer>
   </main>
 
-  <!-- Footer -->
   <footer>
-    <p>© 2024 lxfight · 用心书写每一篇</p>
+    <p>© 2026 lxfight · 用心书写每一篇</p>
   </footer>
 
-  <!-- Back to Top -->
   <button class="back-to-top" id="backToTop">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 19V5M5 12l7-7 7 7"/>

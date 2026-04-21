@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>博客 - lxfight</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header id="header">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">lxfight</a>
+      <nav>
+        <ul>
+          <li><a href="index.html">首页</a></li>
+          <li><a href="about.html">关于</a></li>
+          <li><a href="blog.html" class="active">博客</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <h1>技术博客</h1>
+    <p>分享技术心得与实践经验</p>
+  </section>
+
+  <section class="posts-list">
+    {{allPosts}}
+  </section>
+
+  <footer>
+    <p>© {{currentYear}} lxfight · 用心书写每一篇</p>
+  </footer>
+
+  <button class="back-to-top" id="backToTop">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5 12l7-7 7 7"/>
+    </svg>
+  </button>
+
+  <script>
+    const header = document.getElementById('header');
+    const backToTop = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY > 300;
+      backToTop.classList.toggle('visible', scrolled);
+      header.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationDelay = `${index * 100}ms`;
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.post-item').forEach(item => {
+      observer.observe(item);
+    });
+  </script>
+</body>
+</html>
