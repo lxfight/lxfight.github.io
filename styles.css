@@ -18,6 +18,8 @@
   --transition: 300ms ease-out;
   --max-width: 720px;
   --page-width: 1200px;
+  --content-gap: 40px;
+  --card-padding: 32px;
 }
 
 * {
@@ -48,7 +50,7 @@ body {
 .container {
   max-width: var(--page-width);
   margin: 0 auto;
-  padding: 0 48px;
+  padding: 0 64px;
 }
 
 /* ========================================
@@ -75,10 +77,11 @@ header.scrolled {
 .nav-container {
   max-width: var(--page-width);
   margin: 0 auto;
-  padding: 20px 48px;
+  padding: 16px 64px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-height: 60px;
 }
 
 .nav-logo {
@@ -92,8 +95,9 @@ header.scrolled {
 
 nav ul {
   display: flex;
-  gap: 40px;
+  gap: 32px;
   list-style: none;
+  flex-shrink: 0;
 }
 
 nav ul li a {
@@ -162,9 +166,10 @@ nav ul li a.active::after {
 .hero-stats {
   display: flex;
   justify-content: center;
-  gap: 64px;
+  gap: 48px;
   padding-top: 32px;
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 .stat-item {
@@ -253,15 +258,15 @@ main {
 .posts-grid {
   max-width: var(--page-width);
   margin: 0 auto;
-  padding: 0 48px;
+  padding: 0 64px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
+  gap: var(--content-gap);
 }
 
 .post-card {
   background: var(--surface);
-  padding: 40px;
+  padding: var(--card-padding);
   border: 1px solid var(--border);
   border-radius: 12px;
   transition: transform var(--transition), box-shadow var(--transition);
@@ -516,13 +521,15 @@ main {
 }
 
 .about-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--content-gap);
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .about-section {
-  padding: 32px;
+  padding: var(--card-padding);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -569,16 +576,18 @@ main {
 .tech-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  row-gap: 10px;
 }
 
 .tech-tag {
   font-size: 13px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   background: var(--background);
   color: var(--primary);
   border-radius: 6px;
   border: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 /* Projects */
@@ -853,6 +862,31 @@ footer {
    RESPONSIVE
    ======================================== */
 
+@media (max-width: 1024px) {
+  .container,
+  .nav-container,
+  .posts-grid {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  .posts-grid {
+    gap: 24px;
+  }
+
+  .post-card {
+    padding: 28px;
+  }
+
+  .hero {
+    padding: 130px 0 60px;
+  }
+
+  .about-content {
+    padding: 120px 40px 60px;
+  }
+}
+
 @media (max-width: 768px) {
   .container,
   .nav-container,
@@ -885,7 +919,7 @@ footer {
   }
 
   .post-card {
-    padding: 28px;
+    padding: 24px;
   }
 
   .post-card h3 {
@@ -902,10 +936,6 @@ footer {
 
   .about-content {
     padding: 100px 24px 60px;
-  }
-
-  .about-grid {
-    grid-template-columns: 1fr;
   }
 
   .about-section {
