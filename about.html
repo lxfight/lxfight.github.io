@@ -10,167 +10,181 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Page Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <!-- Custom Cursor -->
+  <div class="custom-cursor" id="customCursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
   <!-- Navigation -->
   <header id="header">
     <div class="nav-container">
-      <a href="index.html" class="nav-logo">lxfight</a>
+      <a href="index.html" class="nav-logo magnetic-btn">lxfight</a>
       <nav>
         <ul>
-          <li><a href="index.html">首页</a></li>
-          <li><a href="about.html" class="active">关于</a></li>
-          <li><a href="blog.html">博客</a></li>
+          <li><a href="index.html" class="magnetic-btn">首页</a></li>
+          <li><a href="about.html" class="active magnetic-btn">关于</a></li>
+          <li><a href="blog.html" class="magnetic-btn">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <!-- About Content -->
-  <main class="about-content">
-    <!-- Profile Header -->
-    <div class="about-header">
-      <div class="about-avatar">LX</div>
-      <h1>lxfight</h1>
-      <p class="title">全栈开发者 · 开源贡献者 · 技术探索者</p>
-      <div class="about-links">
-        <a href="https://github.com/lxfight" target="_blank" rel="noopener">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-          </svg>
-          GitHub
-        </a>
-        <a href="mailto:contact@lxfight.com">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
-          </svg>
-          Email
-        </a>
-      </div>
-    </div>
-
-    <!-- About Sections -->
-    <div class="about-grid">
-      <!-- Introduction -->
-      <div class="about-section">
-        <h2>关于我</h2>
-        <p>我是一名专注于现代Web技术栈的全栈开发者，热衷于探索人工智能、云原生架构和开源技术。通过持续学习和实践，致力于创造有价值的技术产品。</p>
-        <p>在代码的世界里，我追求简洁与优雅；在开源的社区中，我乐于分享与协作。这里记录着我的技术探索和成长思考。</p>
-      </div>
-
-      <!-- Tech Stack -->
-      <div class="about-section">
-        <h2>技术栈</h2>
-        <div class="tech-category">
-          <h3>前端生态</h3>
-          <div class="tech-tags">
-            <span class="tech-tag">Vue.js</span>
-            <span class="tech-tag">React</span>
-            <span class="tech-tag">TypeScript</span>
-            <span class="tech-tag">Tailwind CSS</span>
-            <span class="tech-tag">Vite</span>
-          </div>
-        </div>
-        <div class="tech-category">
-          <h3>后端架构</h3>
-          <div class="tech-tags">
-            <span class="tech-tag">Python</span>
-            <span class="tech-tag">Node.js</span>
-            <span class="tech-tag">Deno</span>
-            <span class="tech-tag">PostgreSQL</span>
-            <span class="tech-tag">Redis</span>
-          </div>
-        </div>
-        <div class="tech-category">
-          <h3>AI & 工具</h3>
-          <div class="tech-tags">
-            <span class="tech-tag">RAG</span>
-            <span class="tech-tag">LLM</span>
-            <span class="tech-tag">Docker</span>
-            <span class="tech-tag">Git</span>
-            <span class="tech-tag">GitHub Actions</span>
-          </div>
+  <div class="page-content">
+    <!-- About Content -->
+    <main class="about-content">
+      <!-- Profile Header -->
+      <div class="about-header reveal">
+        <div class="about-avatar">LX</div>
+        <h1>lxfight</h1>
+        <p class="title">全栈开发者 · 开源贡献者 · 技术探索者</p>
+        <div class="about-links">
+          <a href="https://github.com/lxfight" target="_blank" rel="noopener" class="magnetic-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+            GitHub
+          </a>
+          <a href="mailto:contact@lxfight.com" class="magnetic-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Email
+          </a>
         </div>
       </div>
 
-      <!-- Open Source Projects -->
-      <div class="about-section">
-        <h2>开源项目</h2>
-        <div class="project-item">
-          <div class="project-header">
-            <h3>AstrBot Mnemosyne</h3>
-            <span class="stars">⭐ 110</span>
-          </div>
-          <p>基于RAG技术的长期记忆功能插件，为聊天机器人提供智能记忆和知识管理能力。</p>
-          <div class="project-tech">
-            <span class="tag">Python</span>
-            <span class="tag">RAG</span>
-            <span class="tag">Vector DB</span>
-          </div>
+      <!-- About Sections -->
+      <div class="about-grid">
+        <!-- Introduction -->
+        <div class="about-section reveal stagger-1">
+          <h2>关于我</h2>
+          <p>我是一名专注于现代Web技术栈的全栈开发者，热衷于探索人工智能、云原生架构和开源技术。通过持续学习和实践，致力于创造有价值的技术产品。</p>
+          <p>在代码的世界里，我追求简洁与优雅；在开源的社区中，我乐于分享与协作。这里记录着我的技术探索和成长思考。</p>
         </div>
-        <div class="project-item">
-          <div class="project-header">
-            <h3>AstrBot2GitHub</h3>
-            <span class="stars">⭐ 178</span>
-          </div>
-          <p>基于Deno的GitHub加速访问服务，解决国内网络访问问题，已被广泛使用。</p>
-          <div class="project-tech">
-            <span class="tag">TypeScript</span>
-            <span class="tag">Deno</span>
-            <span class="tag">Proxy</span>
-          </div>
-        </div>
-        <div class="project-item">
-          <div class="project-header">
-            <h3>Prompt优化器</h3>
-            <span class="stars">⭐ 12.1k</span>
-          </div>
-          <p>协作项目：强大的AI提示词优化工具。</p>
-          <div class="project-tech">
-            <span class="tag">TypeScript</span>
-            <span class="tag">LLM</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Interests -->
-      <div class="about-section">
-        <h2>兴趣领域</h2>
-        <ul class="interests-list">
-          <li>
-            <span class="icon">🤖</span>
-            <div class="content">
-              <h3>人工智能</h3>
-              <p>探索RAG、LLM等前沿AI技术在实际场景中的应用</p>
+        <!-- Tech Stack -->
+        <div class="about-section reveal stagger-2">
+          <h2>技术栈</h2>
+          <div class="tech-category">
+            <h3>前端生态</h3>
+            <div class="tech-tags">
+              <span class="tech-tag">Vue.js</span>
+              <span class="tech-tag">React</span>
+              <span class="tech-tag">TypeScript</span>
+              <span class="tech-tag">Tailwind CSS</span>
+              <span class="tech-tag">Vite</span>
             </div>
-          </li>
-          <li>
-            <span class="icon">🌐</span>
-            <div class="content">
-              <h3>开源贡献</h3>
-              <p>积极参与开源社区，分享技术方案和经验</p>
+          </div>
+          <div class="tech-category">
+            <h3>后端架构</h3>
+            <div class="tech-tags">
+              <span class="tech-tag">Python</span>
+              <span class="tech-tag">Node.js</span>
+              <span class="tech-tag">Deno</span>
+              <span class="tech-tag">PostgreSQL</span>
+              <span class="tech-tag">Redis</span>
             </div>
-          </li>
-          <li>
-            <span class="icon">📝</span>
-            <div class="content">
-              <h3>技术写作</h3>
-              <p>通过博客和文档分享技术学习心得</p>
+          </div>
+          <div class="tech-category">
+            <h3>AI & 工具</h3>
+            <div class="tech-tags">
+              <span class="tech-tag">RAG</span>
+              <span class="tech-tag">LLM</span>
+              <span class="tech-tag">Docker</span>
+              <span class="tech-tag">Git</span>
+              <span class="tech-tag">GitHub Actions</span>
             </div>
-          </li>
-          <li>
-            <span class="icon">🎮</span>
-            <div class="content">
-              <h3>创新实验</h3>
-              <p>尝试新技术栈，构建有趣的小项目</p>
+          </div>
+        </div>
+
+        <!-- Open Source Projects -->
+        <div class="about-section reveal stagger-3">
+          <h2>开源项目</h2>
+          <div class="project-item">
+            <div class="project-header">
+              <h3>AstrBot Mnemosyne</h3>
+              <span class="stars">⭐ 110</span>
             </div>
-          </li>
-        </ul>
+            <p>基于RAG技术的长期记忆功能插件，为聊天机器人提供智能记忆和知识管理能力。</p>
+            <div class="project-tech">
+              <span class="tag">Python</span>
+              <span class="tag">RAG</span>
+              <span class="tag">Vector DB</span>
+            </div>
+          </div>
+          <div class="project-item">
+            <div class="project-header">
+              <h3>AstrBot2GitHub</h3>
+              <span class="stars">⭐ 178</span>
+            </div>
+            <p>基于Deno的GitHub加速访问服务，解决国内网络访问问题，已被广泛使用。</p>
+            <div class="project-tech">
+              <span class="tag">TypeScript</span>
+              <span class="tag">Deno</span>
+              <span class="tag">Proxy</span>
+            </div>
+          </div>
+          <div class="project-item">
+            <div class="project-header">
+              <h3>Prompt优化器</h3>
+              <span class="stars">⭐ 12.1k</span>
+            </div>
+            <p>协作项目：强大的AI提示词优化工具。</p>
+            <div class="project-tech">
+              <span class="tag">TypeScript</span>
+              <span class="tag">LLM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interests -->
+        <div class="about-section reveal stagger-4">
+          <h2>兴趣领域</h2>
+          <ul class="interests-list">
+            <li>
+              <span class="icon">🤖</span>
+              <div class="content">
+                <h3>人工智能</h3>
+                <p>探索RAG、LLM等前沿AI技术在实际场景中的应用</p>
+              </div>
+            </li>
+            <li>
+              <span class="icon">🌐</span>
+              <div class="content">
+                <h3>开源贡献</h3>
+                <p>积极参与开源社区，分享技术方案和经验</p>
+              </div>
+            </li>
+            <li>
+              <span class="icon">📝</span>
+              <div class="content">
+                <h3>技术写作</h3>
+                <p>通过博客和文档分享技术学习心得</p>
+              </div>
+            </li>
+            <li>
+              <span class="icon">🎮</span>
+              <div class="content">
+                <h3>创新实验</h3>
+                <p>尝试新技术栈，构建有趣的小项目</p>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
   <!-- Footer -->
-  <footer>
+  <footer class="reveal">
     <p>© 2024 lxfight · 用心书写每一篇</p>
   </footer>
 
@@ -182,19 +196,98 @@
   </button>
 
   <script>
-    // Scroll handling
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
+    (function() {
+      // Page Loader
+      const pageLoader = document.getElementById('pageLoader');
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          pageLoader.classList.add('hidden');
+        }, 400);
+      });
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
+      // Custom Cursor
+      const cursor = document.getElementById('customCursor');
+      const cursorDot = document.getElementById('cursorDot');
+      let cursorX = 0, cursorY = 0;
+      let dotX = 0, dotY = 0;
 
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      if (cursor && cursorDot && !window.matchMedia('(pointer: coarse)').matches) {
+        document.addEventListener('mousemove', (e) => {
+          cursorX = e.clientX;
+          cursorY = e.clientY;
+        });
+
+        function animateCursor() {
+          dotX += (cursorX - dotX) * 0.15;
+          dotY += (cursorY - dotY) * 0.15;
+          cursor.style.left = cursorX + 'px';
+          cursor.style.top = cursorY + 'px';
+          cursorDot.style.left = dotX + 'px';
+          cursorDot.style.top = dotY + 'px';
+          requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        const hoverElements = document.querySelectorAll('a, button, .post-card, .tag, .tech-tag, .project-item, .interests-list li');
+        hoverElements.forEach(el => {
+          el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+          el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+      }
+
+      // Scroll Progress
+      const scrollProgress = document.getElementById('scrollProgress');
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        scrollProgress.style.width = progress + '%';
+      });
+
+      // Scroll handling
+      const header = document.getElementById('header');
+      const backToTop = document.getElementById('backToTop');
+
+      window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY > 300;
+        backToTop.classList.toggle('visible', scrolled);
+        header.classList.toggle('scrolled', window.scrollY > 50);
+      });
+
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      // Reveal on Scroll
+      const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      revealElements.forEach(el => revealObserver.observe(el));
+
+      // Magnetic Buttons
+      const magneticBtns = document.querySelectorAll('.magnetic-btn');
+      magneticBtns.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate(0, 0)';
+        });
+      });
+    })();
   </script>
 </body>
 </html>

@@ -10,110 +10,124 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Page Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <!-- Custom Cursor -->
+  <div class="custom-cursor" id="customCursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
   <header id="header">
     <div class="nav-container">
-      <a href="index.html" class="nav-logo">lxfight</a>
+      <a href="index.html" class="nav-logo magnetic-btn">lxfight</a>
       <nav>
         <ul>
-          <li><a href="index.html" class="active">首页</a></li>
-          <li><a href="about.html">关于</a></li>
-          <li><a href="blog.html">博客</a></li>
+          <li><a href="index.html" class="active magnetic-btn">首页</a></li>
+          <li><a href="about.html" class="magnetic-btn">关于</a></li>
+          <li><a href="blog.html" class="magnetic-btn">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-inner">
-      <h2>在代码与文字间<br>寻找平衡</h2>
-      <p>分享全栈开发、开源项目与技术思考</p>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <span class="stat-number">6+</span>
-          <span class="stat-label">开源项目</span>
+  <div class="page-content">
+    <section class="hero">
+      <div class="hero-inner">
+        <h2><span class="typing-text" id="typingText"></span><span class="typing-cursor" id="typingCursor"></span></h2>
+        <p class="reveal stagger-1">分享全栈开发、开源项目与技术思考</p>
+        <div class="hero-stats reveal stagger-2">
+          <div class="stat-item">
+            <span class="stat-number" data-target="6" data-suffix="+">0</span>
+            <span class="stat-label">开源项目</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" data-target="350" data-suffix="+">0</span>
+            <span class="stat-label">GitHub Stars</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" data-target="4" data-suffix="">0</span>
+            <span class="stat-label">技术文章</span>
+          </div>
         </div>
-        <div class="stat-item">
-          <span class="stat-number">350+</span>
-          <span class="stat-label">GitHub Stars</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">4</span>
-          <span class="stat-label">技术文章</span>
+        <div class="scroll-hint float-animation">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
         </div>
       </div>
-      <div class="scroll-hint">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
-        </svg>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="recent-posts">
-    <div class="section-header">
-      <h2 class="section-title">最新文章</h2>
-    </div>
-    <div class="posts-grid">
-      <article class="post-card">
-        <div class="post-card-header">
-          <span class="post-badge">精选</span>
-          <span class="post-date">2024-08-04</span>
-        </div>
-        <h3><a href="posts/astrbot-plugin-development.html">AstrBot插件开发实战：从零打造RAG记忆系统</a></h3>
-<div class="post-tags">
-        <span class="tag">Python</span>
-        <span class="tag">RAG</span>
-        <span class="tag">插件开发</span>
+    <section class="recent-posts">
+      <div class="section-header reveal">
+        <h2 class="section-title">最新文章</h2>
       </div>
-        <p class="post-excerpt">深入分析获得 110+ stars 的 AstrBot Mnemosyne 插件开发过程，分享 RAG 技术在聊天机器人长期记忆中的应用实践。</p>
-        <a href="posts/astrbot-plugin-development.html" class="read-more">阅读全文 →</a>
-      </article>
+      <div class="posts-grid">
+        <article class="post-card shimmer stagger-1">
+          <div class="post-card-header">
+            <span class="post-badge">精选</span>
+            <span class="post-date">2024-08-04</span>
+          </div>
+          <h3><a href="posts/astrbot-plugin-development.html">AstrBot插件开发实战：从零打造RAG记忆系统</a></h3>
+          <div class="post-tags">
+            <span class="tag">Python</span>
+            <span class="tag">RAG</span>
+            <span class="tag">插件开发</span>
+          </div>
+          <p class="post-excerpt">深入分析获得 110+ stars 的 AstrBot Mnemosyne 插件开发过程，分享 RAG 技术在聊天机器人长期记忆中的应用实践。</p>
+          <a href="posts/astrbot-plugin-development.html" class="read-more magnetic-btn">阅读全文 →</a>
+        </article>
 
-<article class="post-card">
-        <div class="post-card-header">
-          <span class="post-badge">热门</span>
-          <span class="post-date">2024-07-28</span>
-        </div>
-        <h3><a href="posts/deno-github-proxy.html">GitHub加速访问服务的Deno实现与架构思考</a></h3>
-<div class="post-tags">
-        <span class="tag">Deno</span>
-        <span class="tag">TypeScript</span>
-        <span class="tag">网络代理</span>
+        <article class="post-card shimmer stagger-2">
+          <div class="post-card-header">
+            <span class="post-badge">热门</span>
+            <span class="post-date">2024-07-28</span>
+          </div>
+          <h3><a href="posts/deno-github-proxy.html">GitHub加速访问服务的Deno实现与架构思考</a></h3>
+          <div class="post-tags">
+            <span class="tag">Deno</span>
+            <span class="tag">TypeScript</span>
+            <span class="tag">网络代理</span>
+          </div>
+          <p class="post-excerpt">基于 Deno 构建的 GitHub 加速服务获得 178 Stars 和 633 Forks，本文拆解它的技术架构和性能优化思路。</p>
+          <a href="posts/deno-github-proxy.html" class="read-more magnetic-btn">阅读全文 →</a>
+        </article>
+
+        <article class="post-card shimmer stagger-3">
+          <div class="post-card-header">
+            <span class="post-date">2024-01-15</span>
+          </div>
+          <h3><a href="posts/web-development.html">Web开发学习心得与最佳实践</a></h3>
+          <div class="post-tags">
+            <span class="tag">前端</span>
+            <span class="tag">经验分享</span>
+          </div>
+          <p class="post-excerpt">从基础到进阶，分享 Web 开发学习路径和实践经验，包括前端框架选择、项目实战等心得体会。</p>
+          <a href="posts/web-development.html" class="read-more magnetic-btn">阅读全文 →</a>
+        </article>
+
+        <article class="post-card shimmer stagger-4">
+          <div class="post-card-header">
+            <span class="post-date">2024-01-01</span>
+          </div>
+          <h3><a href="posts/first-post.html">开源之路：个人技术博客的搭建与思考</a></h3>
+          <div class="post-tags">
+            <span class="tag">博客</span>
+            <span class="tag">GitHub Pages</span>
+            <span class="tag">开源分享</span>
+          </div>
+          <p class="post-excerpt">记录个人博客搭建的技术选型和设计思路，以及对开源分享和技术写作的一些思考。</p>
+          <a href="posts/first-post.html" class="read-more magnetic-btn">阅读全文 →</a>
+        </article>
       </div>
-        <p class="post-excerpt">基于 Deno 构建的 GitHub 加速服务获得 178 Stars 和 633 Forks，本文拆解它的技术架构和性能优化思路。</p>
-        <a href="posts/deno-github-proxy.html" class="read-more">阅读全文 →</a>
-      </article>
+    </section>
+  </div>
 
-<article class="post-card">
-        <div class="post-card-header">
-          <span class="post-date">2024-01-15</span>
-        </div>
-        <h3><a href="posts/web-development.html">Web开发学习心得与最佳实践</a></h3>
-<div class="post-tags">
-        <span class="tag">前端</span>
-        <span class="tag">经验分享</span>
-      </div>
-        <p class="post-excerpt">从基础到进阶，分享 Web 开发学习路径和实践经验，包括前端框架选择、项目实战等心得体会。</p>
-        <a href="posts/web-development.html" class="read-more">阅读全文 →</a>
-      </article>
-
-<article class="post-card">
-        <div class="post-card-header">
-          <span class="post-date">2024-01-01</span>
-        </div>
-        <h3><a href="posts/first-post.html">开源之路：个人技术博客的搭建与思考</a></h3>
-<div class="post-tags">
-        <span class="tag">博客</span>
-        <span class="tag">GitHub Pages</span>
-        <span class="tag">开源分享</span>
-      </div>
-        <p class="post-excerpt">记录个人博客搭建的技术选型和设计思路，以及对开源分享和技术写作的一些思考。</p>
-        <a href="posts/first-post.html" class="read-more">阅读全文 →</a>
-      </article>
-    </div>
-  </section>
-
-  <footer>
+  <footer class="reveal">
     <p>© 2026 lxfight · 用心书写每一篇</p>
   </footer>
 
@@ -124,37 +138,164 @@
   </button>
 
   <script>
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
-
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
-
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-          entry.target.style.animationDelay = `${index * 100}ms`;
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
+    (function() {
+      // Page Loader
+      const pageLoader = document.getElementById('pageLoader');
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          pageLoader.classList.add('hidden');
+        }, 400);
       });
-    }, observerOptions);
 
-    document.querySelectorAll('.post-card').forEach(card => {
-      observer.observe(card);
-    });
+      // Custom Cursor
+      const cursor = document.getElementById('customCursor');
+      const cursorDot = document.getElementById('cursorDot');
+      let cursorX = 0, cursorY = 0;
+      let dotX = 0, dotY = 0;
+
+      if (cursor && cursorDot && !window.matchMedia('(pointer: coarse)').matches) {
+        document.addEventListener('mousemove', (e) => {
+          cursorX = e.clientX;
+          cursorY = e.clientY;
+        });
+
+        function animateCursor() {
+          dotX += (cursorX - dotX) * 0.15;
+          dotY += (cursorY - dotY) * 0.15;
+          cursor.style.left = cursorX + 'px';
+          cursor.style.top = cursorY + 'px';
+          cursorDot.style.left = dotX + 'px';
+          cursorDot.style.top = dotY + 'px';
+          requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        const hoverElements = document.querySelectorAll('a, button, .post-card, .tag, .tech-tag, .project-item, .interests-list li');
+        hoverElements.forEach(el => {
+          el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+          el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+      }
+
+      // Scroll Progress
+      const scrollProgress = document.getElementById('scrollProgress');
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        scrollProgress.style.width = progress + '%';
+      });
+
+      // Header scroll
+      const header = document.getElementById('header');
+      const backToTop = document.getElementById('backToTop');
+
+      window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY > 300;
+        backToTop.classList.toggle('visible', scrolled);
+        header.classList.toggle('scrolled', window.scrollY > 50);
+      });
+
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      // Typing Effect
+      const typingText = document.getElementById('typingText');
+      const typingCursor = document.getElementById('typingCursor');
+      const text = '在代码与文字间，寻找平衡';
+      let charIndex = 0;
+
+      function typeWriter() {
+        if (charIndex < text.length) {
+          typingText.textContent += text.charAt(charIndex);
+          charIndex++;
+          setTimeout(typeWriter, 100 + Math.random() * 50);
+        } else {
+          setTimeout(() => {
+            typingCursor.style.animation = 'none';
+            typingCursor.style.opacity = '0';
+          }, 2000);
+        }
+      }
+      setTimeout(typeWriter, 800);
+
+      // Counter Animation
+      const counters = document.querySelectorAll('.stat-number');
+      const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const target = parseInt(entry.target.dataset.target);
+            const suffix = entry.target.dataset.suffix || '';
+            const duration = 1500;
+            const startTime = performance.now();
+            entry.target.classList.add('counting');
+
+            function updateCounter(currentTime) {
+              const elapsed = currentTime - startTime;
+              const progress = Math.min(elapsed / duration, 1);
+              const easeOut = 1 - Math.pow(1 - progress, 3);
+              entry.target.textContent = Math.floor(easeOut * target) + suffix;
+              if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+              } else {
+                entry.target.textContent = target + suffix;
+                entry.target.classList.remove('counting');
+              }
+            }
+            requestAnimationFrame(updateCounter);
+            counterObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      counters.forEach(counter => counterObserver.observe(counter));
+
+      // Reveal on Scroll
+      const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      revealElements.forEach(el => revealObserver.observe(el));
+
+      // Post Cards Observer
+      const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            entry.target.style.animationDelay = `${index * 100}ms`;
+            entry.target.classList.add('visible');
+            cardObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.post-card').forEach(card => {
+        cardObserver.observe(card);
+      });
+
+      // Magnetic Buttons
+      const magneticBtns = document.querySelectorAll('.magnetic-btn');
+      magneticBtns.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate(0, 0)';
+        });
+      });
+    })();
   </script>
 </body>
 </html>

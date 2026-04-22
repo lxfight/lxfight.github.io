@@ -11,42 +11,56 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
+  <!-- Page Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <!-- Custom Cursor -->
+  <div class="custom-cursor" id="customCursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
   <header id="header">
     <div class="nav-container">
-      <a href="../index.html" class="nav-logo">lxfight</a>
+      <a href="../index.html" class="nav-logo magnetic-btn">lxfight</a>
       <nav>
         <ul>
-          <li><a href="../index.html">首页</a></li>
-          <li><a href="../about.html">关于</a></li>
-          <li><a href="../blog.html" class="active">博客</a></li>
+          <li><a href="../index.html" class="magnetic-btn">首页</a></li>
+          <li><a href="../about.html" class="magnetic-btn">关于</a></li>
+          <li><a href="../blog.html" class="active magnetic-btn">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="post-content">
-    <header class="post-header">
-      <h1>{{title}}</h1>
-      <p class="post-meta">{{meta}}</p>
-      {{tags}}
-    </header>
+  <div class="page-content">
+    <main class="post-content">
+      <header class="post-header reveal">
+        <h1>{{title}}</h1>
+        <p class="post-meta">{{meta}}</p>
+        {{tags}}
+      </header>
 
-    <div class="post-body">
-      {{content}}
-    </div>
+      <div class="post-body reveal stagger-1">
+        {{content}}
+      </div>
 
-    <footer class="post-footer">
-      <a href="../blog.html" class="back-link">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        返回博客列表
-      </a>
-    </footer>
-  </main>
+      <footer class="post-footer reveal">
+        <a href="../blog.html" class="back-link magnetic-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          返回博客列表
+        </a>
+      </footer>
+    </main>
+  </div>
 
-  <footer>
-    <p>© {{currentYear}} lxfight · 用心书写每一篇</p>
+  <footer class="reveal">
+    <p>&copy; {{currentYear}} lxfight &middot; 用心书写每一篇</p>
   </footer>
 
   <button class="back-to-top" id="backToTop">
@@ -56,18 +70,98 @@
   </button>
 
   <script>
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
+    (function() {
+      // Page Loader
+      const pageLoader = document.getElementById('pageLoader');
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          pageLoader.classList.add('hidden');
+        }, 400);
+      });
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
+      // Custom Cursor
+      const cursor = document.getElementById('customCursor');
+      const cursorDot = document.getElementById('cursorDot');
+      let cursorX = 0, cursorY = 0;
+      let dotX = 0, dotY = 0;
 
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      if (cursor && cursorDot && !window.matchMedia('(pointer: coarse)').matches) {
+        document.addEventListener('mousemove', (e) => {
+          cursorX = e.clientX;
+          cursorY = e.clientY;
+        });
+
+        function animateCursor() {
+          dotX += (cursorX - dotX) * 0.15;
+          dotY += (cursorY - dotY) * 0.15;
+          cursor.style.left = cursorX + 'px';
+          cursor.style.top = cursorY + 'px';
+          cursorDot.style.left = dotX + 'px';
+          cursorDot.style.top = dotY + 'px';
+          requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        const hoverElements = document.querySelectorAll('a, button, .post-card, .tag, .tech-tag, .project-item, .interests-list li');
+        hoverElements.forEach(el => {
+          el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+          el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+      }
+
+      // Scroll Progress
+      const scrollProgress = document.getElementById('scrollProgress');
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        scrollProgress.style.width = progress + '%';
+      });
+
+      // Scroll handling
+      const header = document.getElementById('header');
+      const backToTop = document.getElementById('backToTop');
+
+      window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY > 300;
+        backToTop.classList.toggle('visible', scrolled);
+        header.classList.toggle('scrolled', window.scrollY > 50);
+      });
+
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      // Reveal on Scroll
+      const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      revealElements.forEach(el => revealObserver.observe(el));
+
+      // Magnetic Buttons
+      const magneticBtns = document.querySelectorAll('.magnetic-btn');
+      magneticBtns.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate(0, 0)';
+        });
+      });
+    })();
   </script>
 </body>
 </html>
