@@ -6,7 +6,7 @@
   <!-- 纸色主题：改 data-palette 即可切换整站配色
        offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
        blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
-  <title>开源之路：个人技术博客的搭建与思考 - lxfight</title>
+  <title>把博客拆回两百行脚本：静态建站与手绘纸面笔记 - lxfight</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,12 +46,12 @@
     <header class="section section-plain ruled-band post-hero">
       <div class="wrap-narrow">
         <p class="mark" style="rotate:-1.2deg">✎ 笔记</p>
-        <h1>开源之路：个人技术博客的搭建与思考</h1>
+        <h1>把博客拆回两百行脚本：静态建站与手绘纸面笔记</h1>
         <p class="post-meta"><time datetime="2024-01-01">2024-01-01</time><span class="meta-sep" aria-hidden="true">✎</span><span>博客建设</span></p>
         <ul class="tag-row">
         <li class="tag tag-accent">博客</li>
         <li class="tag">GitHub Pages</li>
-        <li class="tag">开源分享</li>
+        <li class="tag">静态站点</li>
         </ul>
       </div>
     </header>
@@ -60,102 +60,47 @@
     <div class="section section-paper post-main">
       <div class="wrap-narrow">
         <article class="post-body">
-        <p>欢迎来到我的个人技术博客。这是一个记录我在技术探索路上的平台，也是我开源分享理念的体现。今天想和大家分享一下建立这个博客的初衷，以及我为什么决定把站点做成 Markdown 驱动的静态网站。</p>
-        <h2>建站的初衷</h2>
-        <p>作为一名开发者，我一直相信“分享即成长”。</p>
+        <p>以前我也折腾过重型博客框架。装主题、配插件、调打包器，头两天兴致勃勃，等隔了半年想补一篇笔记时，<code>npm install</code> 先报一屏依赖冲突。修完构建配置，原本想写的那点东西早就没兴致写了。</p>
+        <p>这次重做 <code>lxfight.github.io</code>，我给自己的底线很明确：<strong>隔一年不碰，打开仓库依然能在一分钟内把文章发出去。</strong></p>
+        <h2>为什么不用现成框架</h2>
+        <p>个人博客的核心需求其实极窄：把 Markdown 转成 HTML，按日期排个序，再生成首页和列表页。为了这点事引入一整套前端运行时、几十个插件和复杂的客户端水合，长远看全是在给自己攒技术债。</p>
+        <p>我干脆把构建逻辑收敛成了一个单文件 <code>build.js</code>，依赖只留三样：</p>
         <ul>
-        <li>记录技术成长，把分散的学习经验系统化。</li>
-        <li>分享开源项目，把踩过的坑和走通的路径说清楚。</li>
-        <li>传播技术知识，帮助其他开发者解决实际问题。</li>
-        <li>建立个人品牌，在技术社区中留下稳定输出。</li>
+        <li><code>front-matter</code> 读文章头部的元数据</li>
+        <li><code>marked</code> 把正文转成 HTML</li>
+        <li><code>highlight.js</code> 在构建阶段直接完成代码高亮</li>
         </ul>
-        <h2>为什么选择静态博客</h2>
-        <p>对于个人博客，静态网站比传统 CMS 更适合长期维护。</p>
+        <p>加起来两百来行代码，没有任何魔法。模板就是原生 HTML 加上 <code>{{title}}</code>、<code>{{content}}</code> 这样的纯文本占位符，跑一遍 <code>node build.js</code>，不到一秒就能吐出全站静态文件。没有客户端路由，也没有打包产物的 hash 迷宫，丢到 GitHub Pages 上就能直接跑。</p>
+        <h2>做成一本速写本，而不是 SaaS 落地页</h2>
+        <p>既然代码底座已经够轻了，外观上我也想避开那种千篇一律的“毛玻璃 + 大圆角 + 霓虹渐变”。技术笔记本来就更接近草稿纸上的涂写和圈注，索性整站都做成了<strong>铅笔手绘风（Sketch Style）</strong>。</p>
+        <p>整站样式全部收在根目录的 <code>styles.css</code> 里，靠几条硬约束撑起纸面感：</p>
         <ul>
-        <li>加载速度快，不依赖数据库查询。</li>
-        <li>维护成本低，没有服务端运行和升级负担。</li>
-        <li>安全性高，纯静态文件暴露面更小。</li>
-        <li>版本可追踪，所有内容都可以直接放进 Git 仓库。</li>
+        <li>拒绝纯白背景（<code>#ffffff</code> 看久了晃眼），默认用冷调米白纸 <code>#faf8f3</code>，另外配了暖米黄、沙色、蓝图纸、黑板等 8 套纸色，改一下 <code>&lt;html&gt;</code> 上的 <code>data-palette</code> 就能换纸。</li>
+        <li>边框一律用 <code>2px dashed</code> 的铅笔虚线，卡片和按钮做成不对称的小圆角，悬停时带一点 <code>-1deg</code> 的轻微歪斜，模拟手绘线条的不稳定感。</li>
+        <li>强调色只用来画波浪下划线和虚线框，绝不直接拿高饱和红黄蓝绿去当文字颜色，保证在深浅纸面上都有足够的阅读对比度。</li>
         </ul>
-        <h2>技术选型</h2>
-        <p>这一版博客选择了最直接的一条路：HTML + CSS + 少量构建脚本。</p>
-        <h3>GitHub Pages</h3>
-        <p>GitHub Pages 很适合个人博客：</p>
-        <ul>
-        <li>部署简单，推送代码即可上线。</li>
-        <li>原生支持静态资源托管。</li>
-        <li>和仓库工作流天然整合。</li>
-        </ul>
-        <h3>Markdown 作为内容源</h3>
-        <p>相比直接在 HTML 里写正文，Markdown 更适合写作：</p>
-        <ul>
-        <li>文章内容和页面结构分离。</li>
-        <li>更容易维护长文。</li>
-        <li>可以批量生成文章页、首页摘要和博客列表。</li>
-        <li>后续要接入搜索、RSS 或标签页也更容易。</li>
-        </ul>
-        <h3>保留设计自由度</h3>
-        <p>静态站点并不意味着样式受限。页面外观仍然由模板和 CSS 控制，内容则来自 Markdown。</p>
-        <pre><code class="language-css"><span class="hljs-comment">/* 铅笔手绘风：虚线边框 + 交叉排线阴影 + 纸张底 */</span>
+        <pre><code class="language-css"><span class="hljs-comment">/* 铅笔手绘卡片：纸面底色 + 虚线描边 + 错位笔触阴影 */</span>
         <span class="hljs-selector-class">.sketch-box</span> {
           <span class="hljs-attribute">background-color</span>: <span class="hljs-built_in">var</span>(--c-paper);
-          <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> dashed <span class="hljs-built_in">var</span>(--c-pencil);
-          <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">2px</span> <span class="hljs-number">2px</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-built_in">var</span>(--sh-md);
-        }
-
-        <span class="hljs-selector-class">.post-body</span> <span class="hljs-selector-tag">blockquote</span> {
-          <span class="hljs-attribute">padding</span>: <span class="hljs-number">1rem</span> <span class="hljs-number">1.25rem</span>;
-          <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> dashed <span class="hljs-built_in">var</span>(--c-pencil);
-          <span class="hljs-attribute">color</span>: <span class="hljs-built_in">var</span>(--c-pencil-<span class="hljs-number">2</span>);
+          <span class="hljs-attribute">border</span>: <span class="hljs-built_in">var</span>(--bd);
+          <span class="hljs-attribute">border-radius</span>: <span class="hljs-built_in">var</span>(--r-card);
+          <span class="hljs-attribute">box-shadow</span>: <span class="hljs-built_in">var</span>(--shade-md);
         }</code></pre>
-        <h2>内容规划</h2>
-        <p>我希望这个博客长期覆盖几类内容：</p>
+        <p>这里还踩过两个挺有意思的浏览器渲染坑：</p>
+        <p>第一，最早我想在 <code>box-shadow</code> 里直接塞 SVG 排线图案，结果 Chrome 和 Firefox 会静默丢弃带 <code>url()</code> 的阴影声明，不报错也不渲染。最后改成了两段错位叠加的半透明铅笔灰笔触（<code>1px 1px</code> 叠 <code>4px 4px</code>），反倒更像铅笔侧锋涂出来的阴影。</p>
+        <p>第二，卡片加上轻微旋转（<code>rotate</code>）之后会创建新的层叠上下文，原本用 <code>::after { z-index: -1 }</code> 垫在底下的排线纹理会被直接顶到正文上方盖住字。把这类纯装饰背景克制在聚焦态和独立色带里，版面才彻底干净下来。</p>
+        <p>为了防止以后改样式时不小心破戒，我还顺手写了个 <code>sketch-check.js</code>，每次构建完自动扫一遍 CSS 和 HTML——一旦混进渐变、毛玻璃、纯白背景，或者哪套纸色主题的文字对比度跌破 WCAG AA（4.5:1），脚本直接报错退出。</p>
+        <h2>这个本子打算记些什么</h2>
+        <p>把建站流程砍到最简，终归是为了把精力留给正文。接下来这里主要会记三类东西：</p>
         <ul>
-        <li>AI 应用开发，尤其是 RAG 和工具链实践。</li>
-        <li>Web 开发，从前端到部署的完整经验。</li>
-        <li>开源项目复盘，关注架构、取舍和维护。</li>
-        <li>个人学习记录，把过程写清楚而不是只给结论。</li>
+        <li><strong>AI 插件与记忆系统</strong>：围绕 AstrBot 生态做的插件实战，尤其是 RAG、长期记忆沉淀和工具调用里踩过的工程坑。</li>
+        <li><strong>小而稳的工程工具</strong>：像基于 Deno 的 GitHub 代理服务、桌面端桥接客户端这类解决自己日常痛点的小项目。</li>
+        <li><strong>排障与取舍复盘</strong>：少写空泛的概念科普，多写“当时遇到了什么约束、试过哪几种方案、最后为什么选了现在这条路”。</li>
         </ul>
-        <h2>持续迭代</h2>
-        <p>博客建设不是一次性工作，而是持续优化的过程。</p>
-        <h3>用户体验</h3>
-        <ul>
-        <li>响应式布局，保证移动端阅读体验。</li>
-        <li>更稳的排版和留白，降低长文阅读疲劳。</li>
-        <li>首页和列表页自动从 Markdown 生成，减少手工同步错误。</li>
-        </ul>
-        <h3>内容质量</h3>
-        <ul>
-        <li>尽量给出完整上下文，而不是只贴代码片段。</li>
-        <li>保留关键设计取舍，方便后续复盘。</li>
-        <li>让文章既能被读，也能被继续维护。</li>
-        </ul>
-        <h2>开源理念</h2>
-        <p>这个博客本身也是我对开源理念的一次实践。</p>
         <blockquote>
-        <p>代码开源，知识共享。写出来不仅是记录，也是对社区的回馈。</p>
+        <p>代码跑通只是第一步，把来龙去脉理清楚写下来，才算真正消化成了自己的东西。</p>
         </blockquote>
-        <p>我希望它能持续承担几件事：</p>
-        <ul>
-        <li>分享实际项目中的技术挑战和解决方案。</li>
-        <li>公开整理有价值的工具和脚本。</li>
-        <li>参与技术社区讨论，形成正向反馈。</li>
-        </ul>
-        <h2>未来规划</h2>
-        <p>后续我会继续补充这些方向：</p>
-        <ul>
-        <li>AI 应用开发系列：从 RAG 到 LLM 工作流。</li>
-        <li>现代 Web 开发系列：从页面到构建部署。</li>
-        <li>开源项目分析系列：从需求到架构演化。</li>
-        </ul>
-        <h2>联系方式</h2>
-        <p>如果你对这些内容感兴趣，或者正在做类似的项目，欢迎交流。</p>
-        <ul>
-        <li><strong>GitHub</strong>: <a href="https://github.com/lxfight">@lxfight</a></li>
-        <li><strong>邮箱</strong>: <a href="mailto:contact@lxfight.com">contact@lxfight.com</a></li>
-        </ul>
-        <h2>写在最后</h2>
-        <p>技术博客不仅是知识的载体，更是思维的外化。把内容从 HTML 正文里抽离出来，变成 Markdown 驱动的静态站点，对我来说既是一次工程整理，也是一次写作流程升级。</p>
+        <p>如果你正好也在折腾类似的方向，或者对某篇笔记里的实现有不同看法，欢迎随时来 <a href="https://github.com/lxfight">GitHub (@lxfight)</a> 找我交流，也可以直接发邮件到 <a href="mailto:contact@lxfight.com">contact@lxfight.com</a>。</p>
 
         </article>
       <nav class="post-nav-wrap" aria-label="相邻文章">
@@ -163,7 +108,7 @@
           <li>
             <a href="web-development.html">
               <span class="post-nav-label">← 上一篇</span>
-              <span class="post-nav-title">Web开发学习心得与最佳实践</span>
+              <span class="post-nav-title">前端与全栈开发随笔：少背路线图，多写能跑的软件</span>
             </a>
           </li>
         </ul>

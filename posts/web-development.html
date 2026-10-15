@@ -6,7 +6,7 @@
   <!-- 纸色主题：改 data-palette 即可切换整站配色
        offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
        blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
-  <title>Web开发学习心得与最佳实践 - lxfight</title>
+  <title>前端与全栈开发随笔：少背路线图，多写能跑的软件 - lxfight</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,11 +46,11 @@
     <header class="section section-plain ruled-band post-hero">
       <div class="wrap-narrow">
         <p class="mark" style="rotate:-1.2deg">✎ 笔记</p>
-        <h1>Web开发学习心得与最佳实践</h1>
+        <h1>前端与全栈开发随笔：少背路线图，多写能跑的软件</h1>
         <p class="post-meta"><time datetime="2024-01-15">2024-01-15</time><span class="meta-sep" aria-hidden="true">✎</span><span>前端成长</span></p>
         <ul class="tag-row">
         <li class="tag tag-accent">前端</li>
-        <li class="tag">经验分享</li>
+        <li class="tag">工程实践</li>
         </ul>
       </div>
     </header>
@@ -59,54 +59,42 @@
     <div class="section section-paper post-main">
       <div class="wrap-narrow">
         <article class="post-body">
-        <p>在过去的几个月里，我一直在系统学习 Web 开发。回头看，这条路最难的不是技术点本身，而是如何建立一条稳定、可持续的学习路径。这里整理一些我自己验证过的经验。</p>
-        <h2>基础永远重要</h2>
-        <p>无论最后使用 React、Vue 还是其他框架，HTML、CSS 和 JavaScript 的基础都绕不过去。</p>
-        <p>很多初学者一上来就追新框架，但基础薄弱时，问题会被不断放大：</p>
+        <p>学 Web 开发最容易掉进的一个坑，就是把精力全花在“收藏学习路线图”和“跟进新框架发布”上。今天看别人聊状态管理，明天看构建器性能对比，收藏夹塞得满满当当，真要自己从零搭个顺手的小应用，却连个表单校验和错位布局都调不利索。</p>
+        <p>回头看这几年的折腾，真正让我写代码变笃定的，往往不是又追了哪个新轮子，而是被实际项目毒打之后攒下来的那点直觉。</p>
+        <h2>框架兜不住原生机制的盲区</h2>
+        <p>很多人觉得现在都是组件化开发了，只管写状态和模板就行，DOM、事件流、层叠上下文这些老黄历不用深究。</p>
+        <p>平时写普通业务页确实能混过去，但一旦遇到诡异的线上 bug，基础盲区就会立刻现形：</p>
         <ul>
-        <li>看不懂组件背后的 DOM 和事件流。</li>
-        <li>无法判断样式问题到底来自布局还是框架封装。</li>
-        <li>调试时只能依赖猜测，而不是定位原因。</li>
+        <li>给卡片加了个 <code>transform: rotate(-1deg)</code>，为什么原本 <code>z-index: -1</code> 的伪元素背景突然跑到文字上面去了？（因为 <code>transform</code> 创建了新的层叠上下文。）</li>
+        <li>列表滚动卡顿，到底是重绘范围太大，还是滚动监听忘了加 <code>{ passive: true }</code> 阻塞了合成线程？</li>
+        <li>页面偶发白屏或布局跳动，是字体加载策略没配好，还是异步请求竞态把旧数据盖到了新视图上？</li>
         </ul>
-        <p>基础扎实的直接收益是：学新技术更快，排错更稳，换技术栈时迁移成本更低。</p>
-        <h2>一条更稳的学习路径</h2>
-        <p>如果让我重新来一次，我会建议按下面的顺序推进：</p>
+        <p>这些问题查框架文档是查不到答案的。<strong>框架只是帮我们省掉了手动拼 DOM 的体力活，并没有接管浏览器的渲染管线和网络协议。</strong> 把 HTML 语义、CSS 盒模型与层叠规则、浏览器事件循环和 HTTP 缓存头摸透，换什么框架都只是换套语法方言。</p>
+        <h2>带着真实痛点去写，别在 Demo 里打转</h2>
+        <p>跟着教程敲十个 TodoList，不如自己动手写一个哪怕很丑、但自己天天要用的工具。</p>
+        <p>教程里的环境总是温室：接口永远正常返回、数据永远干净、需求永远不会中途拐弯。可一旦你自己做个东西——哪怕只是给机器人插件写个配置面板，或者给自己搭个带多套主题切换的静态博客——现实问题就会排着队找上门：</p>
+        <ul>
+        <li>接口超时或者上游限流了，界面怎么给反馈才不会让用户以为卡死了？</li>
+        <li>用户开了深色模式或者系统的“减弱动态效果”（<code>prefers-reduced-motion</code>），样式和动画怎么降级？</li>
+        <li>构建脚本挂在 CI 上，怎么在不引一堆重型依赖的前提下保证每次产物一致？</li>
+        </ul>
+        <p>为了解决这些具体卡点去翻 MDN、读源码、看 DevTools 的 Performance 和 Network 面板，记下来的东西才是真正长在脑子里的。</p>
+        <h2>先学会做减法</h2>
+        <p>刚上手全栈开发那会儿，我也喜欢把技术栈铺得很满：前端必上全家桶，样式必配原子化方案，后端哪怕只有两个转发接口也要套一层厚重的目录结构。写的时候觉得特正规，过三个月回来改一行小逻辑，光启动本地环境就要折腾半天。</p>
+        <p>现在我开新项目的习惯完全反过来了：<strong>先问自己，不引这个库能不能写？</strong></p>
+        <ul>
+        <li>只是做个几页的静态站点，原生 CSS 变量（Custom Properties）配合语义化标签就能把主题切换和响应式管得明明白白，没必要先装一套 UI 框架。</li>
+        <li>只是做个轻量级的 API 代理或流式转发服务，用 Deno 或原生 Node.js 的 Web Fetch API 几百行就能跑得很稳，不必上来就搭复杂的微服务架子。</li>
+        <li>只有当手写代码开始出现明显的重复、状态散落到难以追踪时，再去引入对应的抽象和工具。</li>
+        </ul>
+        <h2>几个受用至今的小习惯</h2>
+        <p>如果非要总结几条日常开发里最管用的习惯，大概就这几件：</p>
         <ol>
-        <li>掌握 HTML、CSS、JavaScript 基础。</li>
-        <li>学一个主流前端框架，React 或 Vue 都可以。</li>
-        <li>补上 Node.js 和接口调用等后端基础。</li>
-        <li>学数据库和数据建模。</li>
-        <li>熟练使用 Git，把版本管理当成日常习惯。</li>
+        <li><strong>把浏览器 DevTools 当成主战场</strong>：遇到样式不生效先看 Computed 和层叠关系，遇到接口慢先看 Waterfall，别靠在代码里盲猜加 <code>!important</code> 或 <code>setTimeout</code>。</li>
+        <li><strong>给自己的项目写自动化自检</strong>：不管是类型检查、简单的断言脚本还是样式合规扫描，能交给机器拦住的低级错误，就别靠人眼去盯。</li>
+        <li><strong>隔段时间回头改改自己的旧代码</strong>：半年前写的模块现在看着觉得哪里别扭、哪里耦合太死，动手重构一遍，比看十篇“架构最佳实践”感触都深。</li>
         </ol>
-        <p>这个顺序的关键不在于“标准答案”，而在于每一步都能接到下一步，避免知识点散落。</p>
-        <h2>实战项目比刷概念更有效</h2>
-        <p>理论学习当然有价值，但真正让知识固定下来的，还是项目。</p>
-        <p>每学完一个新技术，我都会尽量做一个最小可运行项目，比如：</p>
-        <ul>
-        <li>一个响应式落地页，用来练布局和组件拆分。</li>
-        <li>一个带接口请求的小应用，用来练状态管理和异步流程。</li>
-        <li>一个后台管理页，用来练表单、表格和权限逻辑。</li>
-        </ul>
-        <p>项目不需要大，但一定要能跑、能改、能复盘。</p>
-        <h2>学会做取舍</h2>
-        <p>Web 技术更新很快，保持开放很重要，但盲目追新会让人长期停留在“知道很多名词，却很难真正交付”的状态。</p>
-        <p>我现在更看重这些判断标准：</p>
-        <ul>
-        <li>这个技术是否解决当前问题。</li>
-        <li>团队或个人是否能长期维护。</li>
-        <li>学习投入是否和业务收益匹配。</li>
-        </ul>
-        <p>“适合当前项目”通常比“最新最热门”更重要。</p>
-        <h2>一些实用建议</h2>
-        <ul>
-        <li>别跳过浏览器开发者工具，它几乎是前端工程师的第二终端。</li>
-        <li>尽早养成拆组件和整理样式的习惯。</li>
-        <li>把常见问题写成自己的笔记，而不是每次重新搜索。</li>
-        <li>定期回头重构旧项目，能很直观看到自己的成长。</li>
-        </ul>
-        <h2>总结</h2>
-        <p>Web 开发是一个门槛不高、上限很高的领域。学习过程中最值得投入的，不是追逐每一个热点，而是建立一套可以长期复用的认知框架和实践节奏。</p>
-        <p>如果你也在这条路上，建议从基础出发，尽快做项目，并且持续复盘。长期看，这比任何速成路线都更可靠。</p>
+        <p>Web 技术圈的热点永远追不完，但好软件的标准一直没怎么变过：结构清晰、边界干净、出了问题好排查、隔半年再打开还能改得动。守住这几条，心里就不容易慌。</p>
 
         </article>
       <nav class="post-nav-wrap" aria-label="相邻文章">
@@ -114,13 +102,13 @@
           <li>
             <a href="deno-github-proxy.html">
               <span class="post-nav-label">← 上一篇</span>
-              <span class="post-nav-title">GitHub加速访问服务的Deno实现与架构思考</span>
+              <span class="post-nav-title">用 Deno 写一个抗造的 GitHub 代理服务：AstrBot2GitHub 架构复盘</span>
             </a>
           </li>
           <li>
             <a href="first-post.html">
               <span class="post-nav-label">下一篇 →</span>
-              <span class="post-nav-title">开源之路：个人技术博客的搭建与思考</span>
+              <span class="post-nav-title">把博客拆回两百行脚本：静态建站与手绘纸面笔记</span>
             </a>
           </li>
         </ul>

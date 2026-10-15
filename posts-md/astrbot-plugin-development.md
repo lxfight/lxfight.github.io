@@ -1,8 +1,8 @@
 ---
-title: AstrBot插件开发实战：从零打造RAG记忆系统
+title: AstrBot 长期记忆插件 Mnemosyne 开发复盘：当 RAG 遇上群聊噪音
 date: "2024-08-04"
 category: AI 应用
-excerpt: 深入分析获得 110+ stars 的 AstrBot Mnemosyne 插件开发过程，分享 RAG 技术在聊天机器人长期记忆中的应用实践。
+excerpt: 给聊天机器人加长期记忆，难的从来不是调向量数据库接口，而是怎么在碎片化、充满复读和闲聊的日常对话里，筛出真正值得记下来的信息。
 tags:
   - Python
   - RAG
@@ -11,149 +11,119 @@ badge: 精选
 featured: true
 ---
 
-在开发 AstrBot Mnemosyne 插件的过程中，我把很多原本分散的想法真正落成了系统设计。这个插件的目标并不复杂：让聊天机器人具备可持续的长期记忆能力，但要把这件事做得稳定、可控、可维护，里面其实有不少工程问题。
+做 `astrbot_plugin_mnemosyne`（记忆女神）之前，我对“给机器人加长期记忆”这件事想得挺简单：把聊天记录切一切、算个 Embedding 塞进向量库，每次对话前检索几条最相似的塞回 Prompt，不就完事了吗？
 
-这篇文章按实际开发路径来复盘，从问题定义、架构设计、关键实现到后续优化。
+等第一版原型真挂到群聊和私聊里跑了两天，现实就给了我一记闷棍：
 
-## 项目背景
+- 群里有人连发十条“哈哈哈哈哈”或者表情包，向量库里瞬间塞满了毫无意义的废话。
+- 用户说了一句“今天也一样”，单看这句话连主语都没有，向量检索要么完全召回不到，要么在别的话题下被莫名其妙捞出来，把模型带偏。
+- 随着记忆条数往上涨，检索回来的常常是半年前已经作废的旧设定，机器人还在拿过时的信息接话。
 
-传统聊天机器人在长对话中最大的体验问题之一，就是上下文记忆能力不足。用户刚说过的话，过一会儿模型就“忘了”；更长期的信息，比如用户偏好、持续任务和历史关系，也很难被稳定利用。
+后来这个插件在 GitHub 上拿到了 230+ Stars，而整个迭代过程，其实就是一直在和上面这三个工程问题死磕。
 
-Mnemosyne 的目标是给 AstrBot 增加一层持久化记忆：
+## 为什么不能“按字面逐条入库”
 
-- 记住真正重要的对话。
-- 在合适的时候检索出来。
-- 不让记忆库无限膨胀。
-- 尽量降低使用门槛。
+文档型 RAG（比如读 PDF、查知识库）面对的是结构完整、信息密度高的段落；但**对话型记忆面对的是高度口语化、极其依赖上下文的碎片**。
 
-## 技术架构
+把每一条原始消息直接丢去算向量，既浪费 API 额度，又会严重污染检索空间。在 Mnemosyne 里，我把入库链路改成了“**滑动窗口聚合 → 价值过滤与事实提炼 → 向量入库**”三步。
 
-核心思路是典型的 RAG，但重点不在“能检索”，而在“检索是否有价值”。
+### 1. 先过滤噪音，再按对话轮次提炼事实
 
-- 向量数据库负责存储和召回。
-- 文本嵌入负责把自然语言转换为可检索表示。
-- 检索策略负责筛选相关记忆。
-- 记忆管理负责控制生命周期和质量。
+与其试图用简陋的关键词打分去猜单句话重不重要，不如先把明显的口水话（纯符号、超短附和、指令前缀）在本地直接筛掉；攒够一小段对话窗口后，让小模型（或轻量提取器）把散乱的多轮对话浓缩成一句**主谓宾完整的独立事实**。
 
-## 关键实现
-
-### 1. 文本预处理与分块
-
-长文本如果不切分，会影响向量化质量和检索粒度。我的做法是按句子粗切，再控制块大小。
+比如把三四句关于饮食偏好的闲聊，提炼成一条干净的记录：`“用户 A 表示自己对海鲜过敏，平时偏好吃川菜。”` 这样存进向量库里的每一条记忆，单独拎出来都是自洽的。
 
 ```python
-def chunk_text(text: str, max_chunk_size: int = 500) -> list[str]:
-    """将长文本分割成适合向量化的块"""
-    sentences = re.split(r"[.!?。！？]", text)
-    chunks = []
-    current_chunk = ""
+from dataclasses import dataclass
+import re
+import time
 
-    for sentence in sentences:
-        if len(current_chunk + sentence) <= max_chunk_size:
-            current_chunk += sentence + "。"
-        else:
-            if current_chunk:
-                chunks.append(current_chunk.strip())
-            current_chunk = sentence + "。"
+NOISE_PATTERN = re.compile(r"^[\s\W_哈哈嘿呵啊哦嗯666？?！!。.]+$")
 
-    if current_chunk:
-        chunks.append(current_chunk.strip())
+@dataclass
+class MemoryRecord:
+    session_id: str
+    summary: str
+    embedding: list[float]
+    created_at: float
+    access_count: int = 0
 
-    return chunks
+def is_worth_processing(messages: list[str]) -> bool:
+    """快速拦截纯水群消息与指令，避免无意义的模型与 Embedding 调用"""
+    valid_lines = [
+        m.strip() for m in messages
+        if len(m.strip()) >= 4
+        and not m.strip().startswith("/")
+        and not NOISE_PATTERN.match(m.strip())
+    ]
+    return len("".join(valid_lines)) >= 20
 ```
 
-### 2. 记忆筛选
+只加了这一层前置拦截和对话窗口归并，Embedding 接口的调用量就砍掉了七成以上，而且召回出来的句子再也不会没头没尾。
 
-并不是所有消息都值得进入长期记忆。真正难的部分，是判断一段对话有没有长期价值。
+### 2. 检索不能只看余弦相似度：引入时间衰减
+
+纯靠向量余弦相似度（Cosine Similarity）排高低，会导致一个很反直觉的现象：三个月前某次聊得很投机的旧话题，因为字面匹配度高了 0.02，永远压在昨天刚交代的新情况前面。
+
+人的记忆是有时间温度的。我在召回打分里把**语义相似度**和**时间衰减（Time Decay）**做了加权融合，同时把高于一定阈值的近似记忆合并去重：
 
 ```python
-def calculate_importance_score(message: str) -> float:
-    """计算消息的重要性得分"""
-    score = 0.0
+import math
 
-    important_keywords = ["喜欢", "讨厌", "记住", "重要", "秘密"]
-    for keyword in important_keywords:
-        if keyword in message:
-            score += 0.2
-
-    if "？" in message or "吗" in message:
-        score += 0.1
-
-    if 10 <= len(message) <= 100:
-        score += 0.1
-
-    return min(score, 1.0)
+def score_memory(
+    cosine_sim: float,
+    created_at: float,
+    now: float,
+    half_life_days: float = 14.0,
+    alpha: float = 0.78
+) -> float:
+    """结合语义相似度与指数时间衰减计算最终召回得分"""
+    age_days = max(0.0, (now - created_at) / 86400.0)
+    decay = math.exp(-math.log(2) * (age_days / half_life_days))
+    return alpha * cosine_sim + (1.0 - alpha) * decay
 ```
 
-这个评分逻辑不复杂，但很有效。因为在早期版本里，我最常见的问题不是“记不住”，而是“记住了太多没用的东西”。
+这样一来，除非远期记忆在语义上极其契合（比如明确问起几个月前的某件事），否则近期发生的上下文会自然获得更高的优先级，机器人的回应听起来就更像一个跟得上近况的朋友。
 
-### 3. 检索优化
+## 别让异步 I/O 拖慢聊天响应
 
-为了提升召回质量，我没有只依赖单一相似度检索，而是做了几层组合：
+插件跑在 AstrBot 的消息事件循环里，最忌讳在主回复链路上做耗时的同步操作。
 
-- 语义检索作为主路径。
-- 关键词匹配作为补充。
-- 时间衰减作为排序因子，让近期内容更容易被命中。
+如果用户发一句话，插件要先同步调一次总结接口、再调一次 Embedding 接口、再去写磁盘数据库，最后才把控制权交还给主对话模型，用户体感上会觉得机器人每次回话都要卡好几秒。
 
-这几层叠加起来的好处是：系统更像“会想起重点”，而不是“随机翻档案”。
+Mnemosyne 在工程上的处理原则是**“读在当次，写在后台”**：
 
-## 性能优化
-
-### 批量向量化
-
-如果逐条调用嵌入接口，吞吐和成本都不理想。批量处理可以明显改善这一点。
+- **读取阶段（低延迟）**：收到用户消息后，只对当前 Query 做一次向量化（带 LRU 内存缓存），从本地向量库快速算出 Top-K 记忆注入 System Prompt。
+- **写入阶段（全异步批量）**：对话结束后的记忆归并、去重和持久化，全部丢进后台异步队列（`asyncio.Queue`），攒够一批或者趁空闲窗口再批量调用 Embedding 接口：
 
 ```python
-async def batch_embed_texts(texts: list[str], batch_size: int = 10):
-    """批量生成文本向量"""
-    embeddings = []
-    for index in range(0, len(texts), batch_size):
-        batch = texts[index:index + batch_size]
-        result = await client.embeddings.create(
-            model="text-embedding-ada-002",
-            input=batch
-        )
-        embeddings.extend(item.embedding for item in result.data)
-    return embeddings
+async def flush_embedding_batch(
+    client,
+    model: str,
+    pending_texts: list[str],
+    batch_size: int = 16
+) -> list[list[float]]:
+    """后台批量请求 Embedding，降低网络往返开销与限流风险"""
+    vectors: list[list[float]] = []
+    for i in range(0, len(pending_texts), batch_size):
+        batch = pending_texts[i : i + batch_size]
+        resp = await client.embeddings.create(model=model, input=batch)
+        vectors.extend(item.embedding for item in resp.data)
+    return vectors
 ```
 
-### 缓存
+## 开源之后收到最多反馈的地方
 
-对重复向量化请求和高频检索结果做缓存后，响应速度提升很明显，也能减少外部 API 消耗。
+插件发出来被大家用起来之后，社区 Issue 和 PR 教会了我另一件事：**开发者觉得酷的机制，不一定比“可控性”更重要。**
 
-## 发布后的迭代
+大家提得最多的需求其实非常务实：
 
-项目开源之后，我陆续做了几轮比较关键的调整：
+1. **会话隔离要彻底**：群聊 A 的梗绝不能串到群聊 B 或私聊里去，还要允许按群开关记忆。
+2. **机器人记错了能手动改**：一旦某次幻觉被写进了长期记忆，机器人就会一直复读这个错误认知。为此后来补上了记忆查看、单条删除、清空和导出的管理命令。
+3. **支持自定义小模型与本地 Embedding**：不能强绑某一家昂贵的商业接口，得允许用户把总结模型和向量模型换成便宜的开源模型或本地服务。
 
-- 增加记忆容量限制，避免存储持续膨胀。
-- 优化相关性排序，减少“看起来像相关，其实没用”的结果。
-- 增加导出能力，方便用户自己管理记忆库。
-- 支持更多嵌入模型，降低使用成本。
+## 写在最后
 
-## 经验总结
+折腾完 Mnemosyne 再回头看，所谓的“AI 记忆系统”，三分在算法和模型，七分其实都在数据清洗、生命周期管理和边界隔离上。把什么东西挡在门外、什么时候该让旧记忆退场、记错了怎么给用户留个橡皮擦——把这些不起眼的细节抠明白了，插件才算真正能长期用下去。
 
-做这类插件时，我觉得最重要的不是模型能力本身，而是系统边界。
-
-- 什么内容应该记住。
-- 记住后何时召回。
-- 错误召回时怎么尽量降低干扰。
-- 存储规模如何保持可控。
-
-如果这些问题没有想清楚，只是把“向量库 + Embedding + 检索”拼起来，用户体验通常不会稳定。
-
-## 未来规划
-
-接下来我还想继续补几个方向：
-
-- 支持图片和文件的记忆存储。
-- 增加短期记忆和长期记忆分层。
-- 加入主动遗忘机制。
-- 提供更多向量数据库选项。
-
-## 总结
-
-AstrBot Mnemosyne 是一次很扎实的 AI 工程实践。它让我更明确地意识到，RAG 不只是“把文档喂给模型”，而是一整套围绕记忆质量、检索效果和系统维护成本展开的设计问题。
-
-如果你也在做类似的功能，可以先把最小闭环跑通：存储、筛选、召回，再逐步补优化层。这样比一开始追求全功能更稳。
-
-项目地址：[@lxfight/astrbot_plugin_mnemosyne](https://github.com/lxfight/astrbot_plugin_mnemosyne)
+项目仓库：[@lxfight/astrbot_plugin_mnemosyne](https://github.com/lxfight/astrbot_plugin_mnemosyne)

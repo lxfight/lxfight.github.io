@@ -1,7 +1,7 @@
 [
   {
     "slug": "astrbot-plugin-development",
-    "title": "AstrBot插件开发实战：从零打造RAG记忆系统",
+    "title": "AstrBot 长期记忆插件 Mnemosyne 开发复盘：当 RAG 遇上群聊噪音",
     "date": "2024-08-04",
     "category": "AI 应用",
     "tags": [
@@ -9,14 +9,14 @@
       "RAG",
       "插件开发"
     ],
-    "excerpt": "深入分析获得 110+ stars 的 AstrBot Mnemosyne 插件开发过程，分享 RAG 技术在聊天机器人长期记忆中的应用实践。",
+    "excerpt": "给聊天机器人加长期记忆，难的从来不是调向量数据库接口，而是怎么在碎片化、充满复读和闲聊的日常对话里，筛出真正值得记下来的信息。",
     "badge": "精选",
     "featured": true,
     "url": "posts/astrbot-plugin-development.html"
   },
   {
     "slug": "deno-github-proxy",
-    "title": "GitHub加速访问服务的Deno实现与架构思考",
+    "title": "用 Deno 写一个抗造的 GitHub 代理服务：AstrBot2GitHub 架构复盘",
     "date": "2024-07-28",
     "category": "后端工程",
     "tags": [
@@ -24,36 +24,36 @@
       "TypeScript",
       "网络代理"
     ],
-    "excerpt": "基于 Deno 构建的 GitHub 加速服务获得 178 Stars 和 633 Forks，本文拆解它的技术架构和性能优化思路。",
+    "excerpt": "从最初几十行能跑通的转发脚本，到拿到两百多 Star 的公共服务，复盘 AstrBot2GitHub 在流式转发、ETag 缓存与防刷限流上的实战取舍。",
     "badge": "热门",
     "featured": true,
     "url": "posts/deno-github-proxy.html"
   },
   {
     "slug": "web-development",
-    "title": "Web开发学习心得与最佳实践",
+    "title": "前端与全栈开发随笔：少背路线图，多写能跑的软件",
     "date": "2024-01-15",
     "category": "前端成长",
     "tags": [
       "前端",
-      "经验分享"
+      "工程实践"
     ],
-    "excerpt": "从基础到进阶，分享 Web 开发学习路径和实践经验，包括前端框架选择、项目实战等心得体会。",
+    "excerpt": "框架和构建工具每年都在翻新，但真正决定交付质量的往往是对原生 Web 机制的直觉，以及克制引入复杂度的能力。",
     "badge": "",
     "featured": false,
     "url": "posts/web-development.html"
   },
   {
     "slug": "first-post",
-    "title": "开源之路：个人技术博客的搭建与思考",
+    "title": "把博客拆回两百行脚本：静态建站与手绘纸面笔记",
     "date": "2024-01-01",
     "category": "博客建设",
     "tags": [
       "博客",
       "GitHub Pages",
-      "开源分享"
+      "静态站点"
     ],
-    "excerpt": "记录个人博客搭建的技术选型和设计思路，以及对开源分享和技术写作的一些思考。",
+    "excerpt": "不想再维护一年一崩的构建链。用两百行 Node 脚本和一份手写 CSS，把博客重新做成翻得动的纸面笔记本。",
     "badge": "",
     "featured": false,
     "url": "posts/first-post.html"

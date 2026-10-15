@@ -6,7 +6,7 @@
   <!-- 纸色主题：改 data-palette 即可切换整站配色
        offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
        blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
-  <title>GitHub加速访问服务的Deno实现与架构思考 - lxfight</title>
+  <title>用 Deno 写一个抗造的 GitHub 代理服务：AstrBot2GitHub 架构复盘 - lxfight</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +46,7 @@
     <header class="section section-plain ruled-band post-hero">
       <div class="wrap-narrow">
         <p class="mark" style="rotate:-1.2deg">✎ 笔记</p>
-        <h1>GitHub加速访问服务的Deno实现与架构思考</h1>
+        <h1>用 Deno 写一个抗造的 GitHub 代理服务：AstrBot2GitHub 架构复盘</h1>
         <p class="post-meta"><time datetime="2024-07-28">2024-07-28</time><span class="meta-sep" aria-hidden="true">✎</span><span>后端工程</span></p>
         <ul class="tag-row">
         <li class="tag tag-accent">Deno</li>
@@ -60,201 +60,152 @@
     <div class="section section-paper post-main">
       <div class="wrap-narrow">
         <article class="post-body">
-        <p>AstrBot2GitHub 是我开发的一个基于 Deno 的 GitHub 加速访问服务。这个项目的出发点很直接：在国内环境里，很多依赖 GitHub API 或 Raw 资源的工具，经常会因为网络问题导致体验不稳定。</p>
-        <p>这篇文章想拆开讲三件事：为什么选择 Deno、核心代理架构怎么设计、以及做成可长期维护的服务时遇到过哪些工程问题。</p>
-        <h2>项目背景</h2>
-        <p>在需要频繁访问 GitHub API、Release 资源或 Raw 文件的场景里，网络抖动会明显拖慢开发和使用体验。与其把每个调用方都做重试，不如在中间增加一层稳定代理，把缓存、限流和路由逻辑统一收口。</p>
-        <h2>为什么选择 Deno</h2>
-        <p>相对于 Node.js，Deno 在这个项目里有几个非常直接的优势：</p>
+        <p>做 <code>AstrBot2GitHub</code> 的起因很实在：在使用和开发 AstrBot 的过程中，插件拉取更新、读取仓库元数据、下载 Release 附件都重度依赖 GitHub。而在国内网络环境下，<code>api.github.com</code> 和 <code>raw.githubusercontent.com</code> 时通时断，经常让机器人在安装插件或自检更新时直接卡死。</p>
+        <p>如果在每个插件或客户端里各自写重试和镜像切换，不仅代码到处重复，一旦某个镜像失效还得挨个发版。最干脆的办法就是在中间立一层专门的反向代理服务，把路由映射、缓存、限流和跨域头统一收口。</p>
+        <p>这个小项目后来在社区里攒了 250+ Stars 和 600+ Forks。回头看，把一个“自己能用的几十行转发脚本”打磨成“能扛住公共流量的稳定服务”，中间踩过的坑比预想中多得多。</p>
+        <h2>为什么选了 Deno 而不是 Node.js</h2>
+        <p>立项时我想要的是一个<strong>单文件就能跑、部署体积小、直接写 TypeScript</strong> 的运行时。Deno 在这种纯网络 I/O 型小服务上非常顺手：</p>
         <ul>
-        <li>原生支持 TypeScript，减少额外构建配置。</li>
-        <li>自带现代 Web API，<code>fetch</code>、<code>URL</code>、<code>Request</code>、<code>Response</code> 开箱即用。</li>
-        <li>权限模型更明确，默认更偏安全。</li>
-        <li>标准库可读性高，适合快速实现网络服务。</li>
+        <li><strong>Web 标准 API 一等公民</strong>：入站请求和出站 <code>fetch</code> 用的都是标准的 <code>Request</code>、<code>Response</code>、<code>Headers</code> 和 <code>ReadableStream</code>，不需要在 Node 的 <code>IncomingMessage</code> 和 Web Stream 之间来回做适配。</li>
+        <li><strong>零配置 TypeScript</strong>：省掉了 <code>tsconfig.json</code>、构建打包和源码映射那一摊杂事，改完代码直接跑。</li>
+        <li><strong>权限显式收敛</strong>：启动时只给 <code>--allow-net</code> 和 <code>--allow-env</code>，一个暴露在公网的代理进程就算出问题，也碰不到宿主机的文件系统。</li>
         </ul>
-        <h2>核心架构设计</h2>
-        <h3>1. 请求路由与目标地址映射</h3>
-        <p>核心逻辑是把请求路径映射到不同的 GitHub 上游地址。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">import</span> { serve } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;https://deno.land/std@0.208.0/http/server.ts&quot;</span>;
+        <h2>核心架构里的三个关键设计</h2>
+        <h3>1. 路径映射与流式透传（绝不整包缓冲）</h3>
+        <p>GitHub 的请求大致分两类：体积小但频率高的 API 请求（查版本、读目录），以及体积可能几十上百兆的 Raw / Release 二进制文件。</p>
+        <p>早期最容易犯的错误是在代理层 <code>await response.arrayBuffer()</code> 或 <code>await response.text()</code>，把上游响应全读进内存再返回给客户端。平时测几个 KB 的配置文件毫无察觉，一旦有人并发拉取较大的资源包，实例内存瞬间就会被撑爆。</p>
+        <p>正确的做法是直接把上游 <code>fetch</code> 拿到的 <code>response.body</code>（本身就是 <code>ReadableStream</code>）原样交给下游 <code>Response</code>，靠底层流控边收边发：</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">const</span> <span class="hljs-attr">UPSTREAMS</span>: <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>&gt; = {
+          <span class="hljs-string">&quot;/api/&quot;</span>: <span class="hljs-string">&quot;https://api.github.com/&quot;</span>,
+          <span class="hljs-string">&quot;/raw/&quot;</span>: <span class="hljs-string">&quot;https://raw.githubusercontent.com/&quot;</span>,
+          <span class="hljs-string">&quot;/gh/&quot;</span>: <span class="hljs-string">&quot;https://github.com/&quot;</span>
+        };
 
-        <span class="hljs-keyword">const</span> <span class="hljs-variable constant_">GITHUB_API_BASE</span> = <span class="hljs-string">&quot;https://api.github.com&quot;</span>;
-        <span class="hljs-keyword">const</span> <span class="hljs-variable constant_">GITHUB_RAW_BASE</span> = <span class="hljs-string">&quot;https://raw.githubusercontent.com&quot;</span>;
-
-        <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">handleRequest</span>(<span class="hljs-params"><span class="hljs-attr">request</span>: <span class="hljs-title class_">Request</span></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt; {
-          <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(request.<span class="hljs-property">url</span>);
-          <span class="hljs-keyword">const</span> path = url.<span class="hljs-property">pathname</span>;
-
-          <span class="hljs-keyword">let</span> <span class="hljs-attr">targetUrl</span>: <span class="hljs-built_in">string</span>;
-
-          <span class="hljs-keyword">if</span> (path.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;/api/&quot;</span>)) {
-            targetUrl = <span class="hljs-string">`<span class="hljs-subst">${GITHUB_API_BASE}</span><span class="hljs-subst">${path.replace(<span class="hljs-string">&quot;/api&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)}</span>`</span>;
-          } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (path.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;/raw/&quot;</span>)) {
-            targetUrl = <span class="hljs-string">`<span class="hljs-subst">${GITHUB_RAW_BASE}</span><span class="hljs-subst">${path.replace(<span class="hljs-string">&quot;/raw&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)}</span>`</span>;
-          } <span class="hljs-keyword">else</span> {
-            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(<span class="hljs-string">&quot;Not Found&quot;</span>, { <span class="hljs-attr">status</span>: <span class="hljs-number">404</span> });
+        <span class="hljs-keyword">function</span> <span class="hljs-title function_">resolveTarget</span>(<span class="hljs-params"><span class="hljs-attr">url</span>: URL</span>): <span class="hljs-variable constant_">URL</span> | <span class="hljs-literal">null</span> {
+          <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [prefix, base] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(<span class="hljs-variable constant_">UPSTREAMS</span>)) {
+            <span class="hljs-keyword">if</span> (url.<span class="hljs-property">pathname</span>.<span class="hljs-title function_">startsWith</span>(prefix)) {
+              <span class="hljs-keyword">const</span> rest = url.<span class="hljs-property">pathname</span>.<span class="hljs-title function_">slice</span>(prefix.<span class="hljs-property">length</span>);
+              <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(rest + url.<span class="hljs-property">search</span>, base);
+            }
           }
-
-          <span class="hljs-keyword">return</span> <span class="hljs-title function_">proxyRequest</span>(request, targetUrl);
-        }</code></pre>
-        <h3>2. 多层缓存</h3>
-        <p>缓存不是“顺手加一下”的优化，而是这类服务能不能跑稳的核心。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">CacheEntry</span> {
-          <span class="hljs-attr">data</span>: <span class="hljs-built_in">unknown</span>;
-          <span class="hljs-attr">timestamp</span>: <span class="hljs-built_in">number</span>;
-          <span class="hljs-attr">etag</span>?: <span class="hljs-built_in">string</span>;
+          <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
         }
 
-        <span class="hljs-keyword">class</span> <span class="hljs-title class_">SmartCache</span> {
-          <span class="hljs-keyword">private</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">CacheEntry</span>&gt;();
-          <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> ttl = <span class="hljs-number">5</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>;
+        <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">proxyStream</span>(<span class="hljs-params"><span class="hljs-attr">req</span>: <span class="hljs-title class_">Request</span>, <span class="hljs-attr">target</span>: URL</span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt; {
+          <span class="hljs-keyword">const</span> upstreamReq = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Request</span>(target, {
+            <span class="hljs-attr">method</span>: req.<span class="hljs-property">method</span>,
+            <span class="hljs-attr">headers</span>: <span class="hljs-title function_">sanitizeRequestHeaders</span>(req.<span class="hljs-property">headers</span>, target.<span class="hljs-property">host</span>),
+            <span class="hljs-attr">body</span>: req.<span class="hljs-property">method</span> !== <span class="hljs-string">&quot;GET&quot;</span> &amp;&amp; req.<span class="hljs-property">method</span> !== <span class="hljs-string">&quot;HEAD&quot;</span> ? req.<span class="hljs-property">body</span> : <span class="hljs-literal">undefined</span>,
+            <span class="hljs-attr">redirect</span>: <span class="hljs-string">&quot;follow&quot;</span>
+          });
 
-          <span class="hljs-title function_">get</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">etag</span>?: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">CacheEntry</span> | <span class="hljs-literal">null</span> {
-            <span class="hljs-keyword">const</span> entry = <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">get</span>(key);
-            <span class="hljs-keyword">if</span> (!entry) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+          <span class="hljs-keyword">const</span> upstreamRes = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(upstreamReq);
 
-            <span class="hljs-keyword">if</span> (<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - entry.<span class="hljs-property">timestamp</span> &gt; <span class="hljs-variable language_">this</span>.<span class="hljs-property">ttl</span>) {
-              <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">delete</span>(key);
-              <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
-            }
+          <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(upstreamRes.<span class="hljs-property">body</span>, {
+            <span class="hljs-attr">status</span>: upstreamRes.<span class="hljs-property">status</span>,
+            <span class="hljs-attr">headers</span>: <span class="hljs-title function_">buildResponseHeaders</span>(upstreamRes.<span class="hljs-property">headers</span>)
+          });
+        }</code></pre>
+        <h3>2. 利用 ETag 做条件请求缓存，省下宝贵的 API 额度</h3>
+        <p>GitHub 对未认证的 API 请求有非常严格的限流（每小时 60 次），就算挂了 Token，面对大量插件客户端轮询仓库状态，额度也很快见底。</p>
+        <p>好在 GitHub API 对 <code>ETag</code> 和 <code>If-None-Match</code> 的支持极好——只要上游返回 <code>304 Not Modified</code>，这次请求就<strong>不计入 GitHub 的 Rate Limit 配额</strong>。</p>
+        <p>因此代理层的缓存不能只是傻瓜式的“存 5 分钟过期”，而是要把首次请求拿到的响应体和 <code>ETag</code> 一起存下来。当本地 TTL 过期后，代理带着旧 <code>ETag</code> 去问一下 GitHub：如果返回 <code>304</code>，直接续期本地缓存并返回给客户端；只有返回 <code>200</code> 时才更新缓存内容。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">CachedItem</span> {
+          <span class="hljs-attr">body</span>: <span class="hljs-title class_">Uint8Array</span>;
+          <span class="hljs-attr">status</span>: <span class="hljs-built_in">number</span>;
+          <span class="hljs-attr">headers</span>: [<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>][];
+          <span class="hljs-attr">etag</span>: <span class="hljs-built_in">string</span>;
+          <span class="hljs-attr">expireAt</span>: <span class="hljs-built_in">number</span>;
+        }
 
-            <span class="hljs-keyword">if</span> (etag &amp;&amp; entry.<span class="hljs-property">etag</span> !== etag) {
-              <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
-            }
+        <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">fetchWithEtagCache</span>(<span class="hljs-params">
+          <span class="hljs-attr">cache</span>: <span class="hljs-title class_">Map</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">CachedItem</span>&gt;,
+          <span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>,
+          <span class="hljs-attr">target</span>: URL,
+          <span class="hljs-attr">reqHeaders</span>: <span class="hljs-title class_">Headers</span>,
+          ttlMs = <span class="hljs-number">60_000</span>
+        </span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt; {
+          <span class="hljs-keyword">const</span> now = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+          <span class="hljs-keyword">const</span> hit = cache.<span class="hljs-title function_">get</span>(key);
 
-            <span class="hljs-keyword">return</span> entry;
+          <span class="hljs-keyword">if</span> (hit &amp;&amp; now &lt; hit.<span class="hljs-property">expireAt</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(hit.<span class="hljs-property">body</span>, { <span class="hljs-attr">status</span>: hit.<span class="hljs-property">status</span>, <span class="hljs-attr">headers</span>: hit.<span class="hljs-property">headers</span> });
           }
 
-          <span class="hljs-title function_">set</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>: <span class="hljs-built_in">unknown</span>, <span class="hljs-attr">etag</span>?: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span> {
-            <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(key, {
-              data,
-              <span class="hljs-attr">timestamp</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>(),
-              etag
+          <span class="hljs-keyword">const</span> headers = <span class="hljs-title function_">sanitizeRequestHeaders</span>(reqHeaders, target.<span class="hljs-property">host</span>);
+          <span class="hljs-keyword">if</span> (hit?.<span class="hljs-property">etag</span>) {
+            headers.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;If-None-Match&quot;</span>, hit.<span class="hljs-property">etag</span>);
+          }
+
+          <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(target, { headers });
+
+          <span class="hljs-keyword">if</span> (res.<span class="hljs-property">status</span> === <span class="hljs-number">304</span> &amp;&amp; hit) {
+            hit.<span class="hljs-property">expireAt</span> = now + ttlMs;
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(hit.<span class="hljs-property">body</span>, { <span class="hljs-attr">status</span>: hit.<span class="hljs-property">status</span>, <span class="hljs-attr">headers</span>: hit.<span class="hljs-property">headers</span> });
+          }
+
+          <span class="hljs-keyword">const</span> etag = res.<span class="hljs-property">headers</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&quot;etag&quot;</span>);
+          <span class="hljs-keyword">if</span> (res.<span class="hljs-property">ok</span> &amp;&amp; etag) {
+            <span class="hljs-keyword">const</span> buf = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(<span class="hljs-keyword">await</span> res.<span class="hljs-title function_">arrayBuffer</span>());
+            <span class="hljs-keyword">const</span> savedHeaders = <span class="hljs-title class_">Array</span>.<span class="hljs-title function_">from</span>(<span class="hljs-title function_">buildResponseHeaders</span>(res.<span class="hljs-property">headers</span>).<span class="hljs-title function_">entries</span>());
+            cache.<span class="hljs-title function_">set</span>(key, {
+              <span class="hljs-attr">body</span>: buf,
+              <span class="hljs-attr">status</span>: res.<span class="hljs-property">status</span>,
+              <span class="hljs-attr">headers</span>: savedHeaders,
+              etag,
+              <span class="hljs-attr">expireAt</span>: now + ttlMs
             });
-          }
-        }</code></pre>
-        <p>这里的目标不是追求极致复杂，而是优先减少上游压力和重复请求。</p>
-        <h3>3. 限流和熔断</h3>
-        <p>代理一旦变成公共入口，就必须考虑流量突增和异常请求。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RateLimiter</span> {
-          <span class="hljs-keyword">private</span> <span class="hljs-attr">tokens</span>: <span class="hljs-built_in">number</span>;
-          <span class="hljs-keyword">private</span> <span class="hljs-attr">lastRefill</span>: <span class="hljs-built_in">number</span>;
-
-          <span class="hljs-title function_">constructor</span>(<span class="hljs-params">
-            <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> <span class="hljs-attr">capacity</span>: <span class="hljs-built_in">number</span>,
-            <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> <span class="hljs-attr">refillRate</span>: <span class="hljs-built_in">number</span>
-          </span>) {
-            <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> = capacity;
-            <span class="hljs-variable language_">this</span>.<span class="hljs-property">lastRefill</span> = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(buf, { <span class="hljs-attr">status</span>: res.<span class="hljs-property">status</span>, <span class="hljs-attr">headers</span>: savedHeaders });
           }
 
-          <span class="hljs-title function_">tryConsume</span>(): <span class="hljs-built_in">boolean</span> {
-            <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">refill</span>();
-
-            <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> &gt;= <span class="hljs-number">1</span>) {
-              <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> -= <span class="hljs-number">1</span>;
-              <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
-            }
-
-            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
-          }
-
-          <span class="hljs-keyword">private</span> <span class="hljs-title function_">refill</span>(): <span class="hljs-built_in">void</span> {
-            <span class="hljs-keyword">const</span> now = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
-            <span class="hljs-keyword">const</span> elapsed = (now - <span class="hljs-variable language_">this</span>.<span class="hljs-property">lastRefill</span>) / <span class="hljs-number">1000</span>;
-            <span class="hljs-keyword">const</span> replenished = elapsed * <span class="hljs-variable language_">this</span>.<span class="hljs-property">refillRate</span>;
-
-            <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">capacity</span>, <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> + replenished);
-            <span class="hljs-variable language_">this</span>.<span class="hljs-property">lastRefill</span> = now;
-          }
-        }</code></pre>
-        <h2>性能优化实践</h2>
-        <h3>连接复用</h3>
-        <p>对这类 I/O 密集型服务来说，连接复用的收益非常明显。减少重复握手开销以后，尾延迟会稳定很多。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HTTPClient</span>({
-          <span class="hljs-attr">keepAlive</span>: <span class="hljs-literal">true</span>,
-          <span class="hljs-attr">maxIdleConnections</span>: <span class="hljs-number">100</span>,
-          <span class="hljs-attr">maxIdleConnectionsPerHost</span>: <span class="hljs-number">10</span>,
-          <span class="hljs-attr">idleTimeout</span>: <span class="hljs-number">30000</span>
-        });</code></pre>
-        <h3>流式转发</h3>
-        <p>下载大文件时，流式处理比先把整个响应读入内存更稳。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">streamProxy</span>(<span class="hljs-params"><span class="hljs-attr">request</span>: <span class="hljs-title class_">Request</span>, <span class="hljs-attr">targetUrl</span>: <span class="hljs-built_in">string</span></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt; {
-          <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(targetUrl, {
-            <span class="hljs-attr">method</span>: request.<span class="hljs-property">method</span>,
-            <span class="hljs-attr">headers</span>: request.<span class="hljs-property">headers</span>,
-            <span class="hljs-attr">body</span>: request.<span class="hljs-property">body</span>
-          });
-
-          <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(response.<span class="hljs-property">body</span>, {
-            <span class="hljs-attr">status</span>: response.<span class="hljs-property">status</span>,
-            <span class="hljs-attr">headers</span>: response.<span class="hljs-property">headers</span>
+          <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(res.<span class="hljs-property">body</span>, {
+            <span class="hljs-attr">status</span>: res.<span class="hljs-property">status</span>,
+            <span class="hljs-attr">headers</span>: <span class="hljs-title function_">buildResponseHeaders</span>(res.<span class="hljs-property">headers</span>)
           });
         }</code></pre>
-        <h2>工程化补充</h2>
-        <h3>日志和监控</h3>
-        <p>只看“服务能跑”是不够的，至少要知道请求量、状态码和耗时。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">LogContext</span> {
-          <span class="hljs-attr">requestId</span>: <span class="hljs-built_in">string</span>;
-          <span class="hljs-attr">method</span>: <span class="hljs-built_in">string</span>;
-          <span class="hljs-attr">path</span>: <span class="hljs-built_in">string</span>;
-          <span class="hljs-attr">responseTime</span>?: <span class="hljs-built_in">number</span>;
-          <span class="hljs-attr">statusCode</span>?: <span class="hljs-built_in">number</span>;
-        }
+        <p>加上这层条件请求后，高频轮询插件列表和版本检查对上游配额的消耗几乎降了一个数量级。</p>
+        <h3>3. 请求头清洗与防刷限流</h3>
+        <p>把反向代理放到公网之后，有两件事不做一定会出事：</p>
+        <p>第一是 <strong>Header 清洗</strong>。不能把客户端发来的 <code>Host</code>、<code>Cf-Connecting-Ip</code>、<code>X-Forwarded-*</code> 或者无关 Cookie 原封不动转发给 GitHub，否则轻则触发上游的 WAF 拦截，重则造成信息泄露。认证头也只允许合乎规范的 <code>Authorization</code> 或服务端预设的只读 Token 注入。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">HOP_BY_HOP</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Set</span>([
+          <span class="hljs-string">&quot;connection&quot;</span>,
+          <span class="hljs-string">&quot;keep-alive&quot;</span>,
+          <span class="hljs-string">&quot;proxy-authenticate&quot;</span>,
+          <span class="hljs-string">&quot;proxy-authorization&quot;</span>,
+          <span class="hljs-string">&quot;te&quot;</span>,
+          <span class="hljs-string">&quot;trailers&quot;</span>,
+          <span class="hljs-string">&quot;transfer-encoding&quot;</span>,
+          <span class="hljs-string">&quot;upgrade&quot;</span>,
+          <span class="hljs-string">&quot;host&quot;</span>
+        ]);
 
-        <span class="hljs-keyword">function</span> <span class="hljs-title function_">logRequest</span>(<span class="hljs-params"><span class="hljs-attr">context</span>: <span class="hljs-title class_">LogContext</span></span>): <span class="hljs-built_in">void</span> {
-          <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
-            <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>(),
-            <span class="hljs-attr">level</span>: <span class="hljs-string">&quot;INFO&quot;</span>,
-            <span class="hljs-attr">message</span>: <span class="hljs-string">&quot;Request processed&quot;</span>,
-            ...context
-          }));
+        <span class="hljs-keyword">function</span> <span class="hljs-title function_">sanitizeRequestHeaders</span>(<span class="hljs-params"><span class="hljs-attr">incoming</span>: <span class="hljs-title class_">Headers</span>, <span class="hljs-attr">targetHost</span>: <span class="hljs-built_in">string</span></span>): <span class="hljs-title class_">Headers</span> {
+          <span class="hljs-keyword">const</span> clean = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Headers</span>();
+          <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [k, v] <span class="hljs-keyword">of</span> incoming.<span class="hljs-title function_">entries</span>()) {
+            <span class="hljs-keyword">const</span> lower = k.<span class="hljs-title function_">toLowerCase</span>();
+            <span class="hljs-keyword">if</span> (<span class="hljs-variable constant_">HOP_BY_HOP</span>.<span class="hljs-title function_">has</span>(lower) || lower.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;x-forwarded-&quot;</span>)) <span class="hljs-keyword">continue</span>;
+            clean.<span class="hljs-title function_">set</span>(k, v);
+          }
+          clean.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;Host&quot;</span>, targetHost);
+          <span class="hljs-keyword">if</span> (!clean.<span class="hljs-title function_">has</span>(<span class="hljs-string">&quot;User-Agent&quot;</span>)) {
+            clean.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;User-Agent&quot;</span>, <span class="hljs-string">&quot;AstrBot2GitHub-Proxy/1.0&quot;</span>);
+          }
+          <span class="hljs-keyword">return</span> clean;
         }</code></pre>
-        <h3>部署方式</h3>
-        <p>用容器化来固定运行环境，是这类小服务最省心的做法之一。</p>
+        <p>第二是<strong>按 IP 与路径维度的令牌桶限流</strong>。公共代理很容易被爬虫或写死死循环的故障脚本盯上，用轻量级的内存令牌桶把异常高频请求直接挡在 <code>429 Too Many Requests</code>，同时定期清理过期的 IP 桶防止内存泄漏，服务才能长期无人值守地跑下去。</p>
+        <h2>容器化与部署</h2>
+        <p>部署层面尽量保持克制，一个十几行的 <code>Dockerfile</code> 锁死 Deno 版本，构建阶段预缓存依赖，运行阶段只开网络和环境变量权限：</p>
         <pre><code class="language-dockerfile"><span class="hljs-keyword">FROM</span> denoland/deno:<span class="hljs-number">1.40</span>.<span class="hljs-number">0</span>
 
         <span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app</span>
         <span class="hljs-keyword">COPY</span><span class="language-bash"> . .</span>
-
         <span class="hljs-keyword">RUN</span><span class="language-bash"> deno cache src/main.ts</span>
 
         <span class="hljs-keyword">EXPOSE</span> <span class="hljs-number">8000</span>
-
         <span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;run&quot;</span>, <span class="hljs-string">&quot;--allow-net&quot;</span>, <span class="hljs-string">&quot;--allow-env&quot;</span>, <span class="hljs-string">&quot;src/main.ts&quot;</span>]</span></code></pre>
-        <h2>遇到过的几个问题</h2>
-        <h3>CORS</h3>
-        <p>代理层经常需要补齐跨域头，不然前端接入会遇到一堆额外限制。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">addCorsHeaders</span>(<span class="hljs-params"><span class="hljs-attr">response</span>: <span class="hljs-title class_">Response</span></span>): <span class="hljs-title class_">Response</span> {
-          <span class="hljs-keyword">const</span> headers = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Headers</span>(response.<span class="hljs-property">headers</span>);
-          headers.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;Access-Control-Allow-Origin&quot;</span>, <span class="hljs-string">&quot;*&quot;</span>);
-          headers.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;Access-Control-Allow-Methods&quot;</span>, <span class="hljs-string">&quot;GET, POST, PUT, DELETE, OPTIONS&quot;</span>);
-          headers.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;Access-Control-Allow-Headers&quot;</span>, <span class="hljs-string">&quot;Content-Type, Authorization&quot;</span>);
-
-          <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(response.<span class="hljs-property">body</span>, {
-            <span class="hljs-attr">status</span>: response.<span class="hljs-property">status</span>,
-            headers
-          });
-        }</code></pre>
-        <h3>认证透传</h3>
-        <p>代理认证信息时，既要保证功能正确，也要避免把不该转发的头无脑带出去。</p>
-        <pre><code class="language-ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">processAuthHeaders</span>(<span class="hljs-params"><span class="hljs-attr">headers</span>: <span class="hljs-title class_">Headers</span></span>): <span class="hljs-title class_">Headers</span> {
-          <span class="hljs-keyword">const</span> nextHeaders = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Headers</span>();
-
-          <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> headers.<span class="hljs-title function_">entries</span>()) {
-            <span class="hljs-keyword">if</span> (key.<span class="hljs-title function_">toLowerCase</span>() === <span class="hljs-string">&quot;authorization&quot;</span>) {
-              <span class="hljs-keyword">if</span> (value.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;token &quot;</span>) || value.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;Bearer &quot;</span>)) {
-                nextHeaders.<span class="hljs-title function_">set</span>(key, value);
-              }
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!key.<span class="hljs-title function_">toLowerCase</span>().<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;x-forwarded-&quot;</span>)) {
-              nextHeaders.<span class="hljs-title function_">set</span>(key, value);
-            }
-          }
-
-          <span class="hljs-keyword">return</span> nextHeaders;
-        }</code></pre>
-        <h2>总结</h2>
-        <p>这个项目让我更加确定一件事：对很多中小型网络服务来说，关键不是技术栈本身有多新，而是路径是否清晰，边界是否稳定，运维成本是否可控。</p>
-        <p>Deno 在这类代理服务里很好用，尤其适合想要快速落地一个现代 TypeScript 网络服务的场景。如果你也在做类似项目，建议从最小可用代理开始，再逐步加缓存、限流和监控，不要一开始就把系统做得过度复杂。</p>
+        <p>整个服务跑在轻量容器里，也可以直接塞进 Deno Deploy 这类边缘环境。</p>
+        <h2>一点体会</h2>
+        <p>写 <code>AstrBot2GitHub</code> 最大的感触是：这种基础设施型的小工具，<strong>克制比炫技重要得多</strong>。不需要复杂的框架，也不需要花哨的后台，只要把流式内存边界、上游配额保护（ETag 缓存）和异常请求隔离这三件事扎扎实实做好，几百行代码就能稳稳当当地帮几百个下游实例省去天天断连的烦恼。</p>
 
         </article>
       <nav class="post-nav-wrap" aria-label="相邻文章">
@@ -262,13 +213,13 @@
           <li>
             <a href="astrbot-plugin-development.html">
               <span class="post-nav-label">← 上一篇</span>
-              <span class="post-nav-title">AstrBot插件开发实战：从零打造RAG记忆系统</span>
+              <span class="post-nav-title">AstrBot 长期记忆插件 Mnemosyne 开发复盘：当 RAG 遇上群聊噪音</span>
             </a>
           </li>
           <li>
             <a href="web-development.html">
               <span class="post-nav-label">下一篇 →</span>
-              <span class="post-nav-title">Web开发学习心得与最佳实践</span>
+              <span class="post-nav-title">前端与全栈开发随笔：少背路线图，多写能跑的软件</span>
             </a>
           </li>
         </ul>
