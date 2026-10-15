@@ -1,281 +1,406 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-palette="offwhite">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 纸色主题：改 data-palette 即可切换整站配色
+       offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
+       blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
   <title>GitHub加速访问服务的Deno实现与架构思考 - lxfight</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header id="header">
-    <div class="nav-container">
-      <a href="../index.html" class="nav-logo">lxfight</a>
-      <nav>
-        <ul>
+  <a href="#main" class="skip-link">跳到主要内容</a>
+
+  <div class="pencil-cursor" id="pencilCursor" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <div class="page-loader" id="pageLoader" role="status" aria-label="页面加载中">
+    <div class="loader-mark">
+      <span class="loader-box" aria-hidden="true"></span>
+      <span class="loader-text">翻开这一页…</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap nav-shell">
+      <a href="../index.html" class="nav-logo">
+        <span class="logo-mark" aria-hidden="true">✎</span>
+        lxfight
+      </a>
+      <nav aria-label="主导航">
+        <ul class="nav-links">
           <li><a href="../index.html">首页</a></li>
+          <li><a href="../blog.html" aria-current="page">博客</a></li>
           <li><a href="../about.html">关于</a></li>
-          <li><a href="../blog.html" class="active">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="post-content">
-    <header class="post-header">
-      <h1>GitHub加速访问服务的Deno实现与架构思考</h1>
-      <p class="post-meta">2024-07-28 · 后端工程</p>
-      <div class="post-tags">
-        <span class="tag">Deno</span>
-        <span class="tag">TypeScript</span>
-        <span class="tag">网络代理</span>
+  <div class="page-content">
+    <!-- 页头带：纸色底 + 横格线，像笔记的抬头 -->
+    <header class="section section-plain ruled-band post-hero">
+      <div class="wrap-narrow">
+        <p class="mark" style="rotate:-1.2deg">✎ 笔记</p>
+        <h1>GitHub加速访问服务的Deno实现与架构思考</h1>
+        <p class="post-meta"><time datetime="2024-07-28">2024-07-28</time><span class="meta-sep" aria-hidden="true">✎</span><span>后端工程</span></p>
+        <ul class="tag-row">
+        <li class="tag tag-accent">Deno</li>
+        <li class="tag">TypeScript</li>
+        <li class="tag">网络代理</li>
+        </ul>
       </div>
     </header>
 
-    <div class="post-body">
-      <p>AstrBot2GitHub 是我开发的一个基于 Deno 的 GitHub 加速访问服务。这个项目的出发点很直接：在国内环境里，很多依赖 GitHub API 或 Raw 资源的工具，经常会因为网络问题导致体验不稳定。</p>
-<p>这篇文章想拆开讲三件事：为什么选择 Deno、核心代理架构怎么设计、以及做成可长期维护的服务时遇到过哪些工程问题。</p>
-<h2>项目背景</h2>
-<p>在需要频繁访问 GitHub API、Release 资源或 Raw 文件的场景里，网络抖动会明显拖慢开发和使用体验。与其把每个调用方都做重试，不如在中间增加一层稳定代理，把缓存、限流和路由逻辑统一收口。</p>
-<h2>为什么选择 Deno</h2>
-<p>相对于 Node.js，Deno 在这个项目里有几个非常直接的优势：</p>
-<ul>
-<li>原生支持 TypeScript，减少额外构建配置。</li>
-<li>自带现代 Web API，<code>fetch</code>、<code>URL</code>、<code>Request</code>、<code>Response</code> 开箱即用。</li>
-<li>权限模型更明确，默认更偏安全。</li>
-<li>标准库可读性高，适合快速实现网络服务。</li>
-</ul>
-<h2>核心架构设计</h2>
-<h3>1. 请求路由与目标地址映射</h3>
-<p>核心逻辑是把请求路径映射到不同的 GitHub 上游地址。</p>
-<pre><code class="language-ts">import { serve } from &quot;https://deno.land/std@0.208.0/http/server.ts&quot;;
+    <!-- 正文带：纸片底，与页头形成色阶 -->
+    <div class="section section-paper post-main">
+      <div class="wrap-narrow">
+        <article class="post-body">
+        <p>AstrBot2GitHub 是我开发的一个基于 Deno 的 GitHub 加速访问服务。这个项目的出发点很直接：在国内环境里，很多依赖 GitHub API 或 Raw 资源的工具，经常会因为网络问题导致体验不稳定。</p>
+        <p>这篇文章想拆开讲三件事：为什么选择 Deno、核心代理架构怎么设计、以及做成可长期维护的服务时遇到过哪些工程问题。</p>
+        <h2>项目背景</h2>
+        <p>在需要频繁访问 GitHub API、Release 资源或 Raw 文件的场景里，网络抖动会明显拖慢开发和使用体验。与其把每个调用方都做重试，不如在中间增加一层稳定代理，把缓存、限流和路由逻辑统一收口。</p>
+        <h2>为什么选择 Deno</h2>
+        <p>相对于 Node.js，Deno 在这个项目里有几个非常直接的优势：</p>
+        <ul>
+        <li>原生支持 TypeScript，减少额外构建配置。</li>
+        <li>自带现代 Web API，<code>fetch</code>、<code>URL</code>、<code>Request</code>、<code>Response</code> 开箱即用。</li>
+        <li>权限模型更明确，默认更偏安全。</li>
+        <li>标准库可读性高，适合快速实现网络服务。</li>
+        </ul>
+        <h2>核心架构设计</h2>
+        <h3>1. 请求路由与目标地址映射</h3>
+        <p>核心逻辑是把请求路径映射到不同的 GitHub 上游地址。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">import</span> { serve } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;https://deno.land/std@0.208.0/http/server.ts&quot;</span>;
 
-const GITHUB_API_BASE = &quot;https://api.github.com&quot;;
-const GITHUB_RAW_BASE = &quot;https://raw.githubusercontent.com&quot;;
+        <span class="hljs-keyword">const</span> <span class="hljs-variable constant_">GITHUB_API_BASE</span> = <span class="hljs-string">&quot;https://api.github.com&quot;</span>;
+        <span class="hljs-keyword">const</span> <span class="hljs-variable constant_">GITHUB_RAW_BASE</span> = <span class="hljs-string">&quot;https://raw.githubusercontent.com&quot;</span>;
 
-async function handleRequest(request: Request): Promise&lt;Response&gt; {
-  const url = new URL(request.url);
-  const path = url.pathname;
+        <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">handleRequest</span>(<span class="hljs-params"><span class="hljs-attr">request</span>: <span class="hljs-title class_">Request</span></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt; {
+          <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(request.<span class="hljs-property">url</span>);
+          <span class="hljs-keyword">const</span> path = url.<span class="hljs-property">pathname</span>;
 
-  let targetUrl: string;
+          <span class="hljs-keyword">let</span> <span class="hljs-attr">targetUrl</span>: <span class="hljs-built_in">string</span>;
 
-  if (path.startsWith(&quot;/api/&quot;)) {
-    targetUrl = `${GITHUB_API_BASE}${path.replace(&quot;/api&quot;, &quot;&quot;)}`;
-  } else if (path.startsWith(&quot;/raw/&quot;)) {
-    targetUrl = `${GITHUB_RAW_BASE}${path.replace(&quot;/raw&quot;, &quot;&quot;)}`;
-  } else {
-    return new Response(&quot;Not Found&quot;, { status: 404 });
-  }
+          <span class="hljs-keyword">if</span> (path.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;/api/&quot;</span>)) {
+            targetUrl = <span class="hljs-string">`<span class="hljs-subst">${GITHUB_API_BASE}</span><span class="hljs-subst">${path.replace(<span class="hljs-string">&quot;/api&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)}</span>`</span>;
+          } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (path.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;/raw/&quot;</span>)) {
+            targetUrl = <span class="hljs-string">`<span class="hljs-subst">${GITHUB_RAW_BASE}</span><span class="hljs-subst">${path.replace(<span class="hljs-string">&quot;/raw&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)}</span>`</span>;
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(<span class="hljs-string">&quot;Not Found&quot;</span>, { <span class="hljs-attr">status</span>: <span class="hljs-number">404</span> });
+          }
 
-  return proxyRequest(request, targetUrl);
-}
-</code></pre>
-<h3>2. 多层缓存</h3>
-<p>缓存不是“顺手加一下”的优化，而是这类服务能不能跑稳的核心。</p>
-<pre><code class="language-ts">interface CacheEntry {
-  data: unknown;
-  timestamp: number;
-  etag?: string;
-}
+          <span class="hljs-keyword">return</span> <span class="hljs-title function_">proxyRequest</span>(request, targetUrl);
+        }</code></pre>
+        <h3>2. 多层缓存</h3>
+        <p>缓存不是“顺手加一下”的优化，而是这类服务能不能跑稳的核心。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">CacheEntry</span> {
+          <span class="hljs-attr">data</span>: <span class="hljs-built_in">unknown</span>;
+          <span class="hljs-attr">timestamp</span>: <span class="hljs-built_in">number</span>;
+          <span class="hljs-attr">etag</span>?: <span class="hljs-built_in">string</span>;
+        }
 
-class SmartCache {
-  private cache = new Map&lt;string, CacheEntry&gt;();
-  private readonly ttl = 5 * 60 * 1000;
+        <span class="hljs-keyword">class</span> <span class="hljs-title class_">SmartCache</span> {
+          <span class="hljs-keyword">private</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">CacheEntry</span>&gt;();
+          <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> ttl = <span class="hljs-number">5</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>;
 
-  get(key: string, etag?: string): CacheEntry | null {
-    const entry = this.cache.get(key);
-    if (!entry) return null;
+          <span class="hljs-title function_">get</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">etag</span>?: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">CacheEntry</span> | <span class="hljs-literal">null</span> {
+            <span class="hljs-keyword">const</span> entry = <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">get</span>(key);
+            <span class="hljs-keyword">if</span> (!entry) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
 
-    if (Date.now() - entry.timestamp &gt; this.ttl) {
-      this.cache.delete(key);
-      return null;
-    }
+            <span class="hljs-keyword">if</span> (<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - entry.<span class="hljs-property">timestamp</span> &gt; <span class="hljs-variable language_">this</span>.<span class="hljs-property">ttl</span>) {
+              <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">delete</span>(key);
+              <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+            }
 
-    if (etag &amp;&amp; entry.etag !== etag) {
-      return null;
-    }
+            <span class="hljs-keyword">if</span> (etag &amp;&amp; entry.<span class="hljs-property">etag</span> !== etag) {
+              <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+            }
 
-    return entry;
-  }
+            <span class="hljs-keyword">return</span> entry;
+          }
 
-  set(key: string, data: unknown, etag?: string): void {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      etag
-    });
-  }
-}
-</code></pre>
-<p>这里的目标不是追求极致复杂，而是优先减少上游压力和重复请求。</p>
-<h3>3. 限流和熔断</h3>
-<p>代理一旦变成公共入口，就必须考虑流量突增和异常请求。</p>
-<pre><code class="language-ts">class RateLimiter {
-  private tokens: number;
-  private lastRefill: number;
+          <span class="hljs-title function_">set</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>: <span class="hljs-built_in">unknown</span>, <span class="hljs-attr">etag</span>?: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span> {
+            <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(key, {
+              data,
+              <span class="hljs-attr">timestamp</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>(),
+              etag
+            });
+          }
+        }</code></pre>
+        <p>这里的目标不是追求极致复杂，而是优先减少上游压力和重复请求。</p>
+        <h3>3. 限流和熔断</h3>
+        <p>代理一旦变成公共入口，就必须考虑流量突增和异常请求。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RateLimiter</span> {
+          <span class="hljs-keyword">private</span> <span class="hljs-attr">tokens</span>: <span class="hljs-built_in">number</span>;
+          <span class="hljs-keyword">private</span> <span class="hljs-attr">lastRefill</span>: <span class="hljs-built_in">number</span>;
 
-  constructor(
-    private readonly capacity: number,
-    private readonly refillRate: number
-  ) {
-    this.tokens = capacity;
-    this.lastRefill = Date.now();
-  }
+          <span class="hljs-title function_">constructor</span>(<span class="hljs-params">
+            <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> <span class="hljs-attr">capacity</span>: <span class="hljs-built_in">number</span>,
+            <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> <span class="hljs-attr">refillRate</span>: <span class="hljs-built_in">number</span>
+          </span>) {
+            <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> = capacity;
+            <span class="hljs-variable language_">this</span>.<span class="hljs-property">lastRefill</span> = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+          }
 
-  tryConsume(): boolean {
-    this.refill();
+          <span class="hljs-title function_">tryConsume</span>(): <span class="hljs-built_in">boolean</span> {
+            <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">refill</span>();
 
-    if (this.tokens &gt;= 1) {
-      this.tokens -= 1;
-      return true;
-    }
+            <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> &gt;= <span class="hljs-number">1</span>) {
+              <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> -= <span class="hljs-number">1</span>;
+              <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+            }
 
-    return false;
-  }
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+          }
 
-  private refill(): void {
-    const now = Date.now();
-    const elapsed = (now - this.lastRefill) / 1000;
-    const replenished = elapsed * this.refillRate;
+          <span class="hljs-keyword">private</span> <span class="hljs-title function_">refill</span>(): <span class="hljs-built_in">void</span> {
+            <span class="hljs-keyword">const</span> now = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+            <span class="hljs-keyword">const</span> elapsed = (now - <span class="hljs-variable language_">this</span>.<span class="hljs-property">lastRefill</span>) / <span class="hljs-number">1000</span>;
+            <span class="hljs-keyword">const</span> replenished = elapsed * <span class="hljs-variable language_">this</span>.<span class="hljs-property">refillRate</span>;
 
-    this.tokens = Math.min(this.capacity, this.tokens + replenished);
-    this.lastRefill = now;
-  }
-}
-</code></pre>
-<h2>性能优化实践</h2>
-<h3>连接复用</h3>
-<p>对这类 I/O 密集型服务来说，连接复用的收益非常明显。减少重复握手开销以后，尾延迟会稳定很多。</p>
-<pre><code class="language-ts">const client = new HTTPClient({
-  keepAlive: true,
-  maxIdleConnections: 100,
-  maxIdleConnectionsPerHost: 10,
-  idleTimeout: 30000
-});
-</code></pre>
-<h3>流式转发</h3>
-<p>下载大文件时，流式处理比先把整个响应读入内存更稳。</p>
-<pre><code class="language-ts">async function streamProxy(request: Request, targetUrl: string): Promise&lt;Response&gt; {
-  const response = await fetch(targetUrl, {
-    method: request.method,
-    headers: request.headers,
-    body: request.body
-  });
+            <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">capacity</span>, <span class="hljs-variable language_">this</span>.<span class="hljs-property">tokens</span> + replenished);
+            <span class="hljs-variable language_">this</span>.<span class="hljs-property">lastRefill</span> = now;
+          }
+        }</code></pre>
+        <h2>性能优化实践</h2>
+        <h3>连接复用</h3>
+        <p>对这类 I/O 密集型服务来说，连接复用的收益非常明显。减少重复握手开销以后，尾延迟会稳定很多。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HTTPClient</span>({
+          <span class="hljs-attr">keepAlive</span>: <span class="hljs-literal">true</span>,
+          <span class="hljs-attr">maxIdleConnections</span>: <span class="hljs-number">100</span>,
+          <span class="hljs-attr">maxIdleConnectionsPerHost</span>: <span class="hljs-number">10</span>,
+          <span class="hljs-attr">idleTimeout</span>: <span class="hljs-number">30000</span>
+        });</code></pre>
+        <h3>流式转发</h3>
+        <p>下载大文件时，流式处理比先把整个响应读入内存更稳。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">streamProxy</span>(<span class="hljs-params"><span class="hljs-attr">request</span>: <span class="hljs-title class_">Request</span>, <span class="hljs-attr">targetUrl</span>: <span class="hljs-built_in">string</span></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt; {
+          <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(targetUrl, {
+            <span class="hljs-attr">method</span>: request.<span class="hljs-property">method</span>,
+            <span class="hljs-attr">headers</span>: request.<span class="hljs-property">headers</span>,
+            <span class="hljs-attr">body</span>: request.<span class="hljs-property">body</span>
+          });
 
-  return new Response(response.body, {
-    status: response.status,
-    headers: response.headers
-  });
-}
-</code></pre>
-<h2>工程化补充</h2>
-<h3>日志和监控</h3>
-<p>只看“服务能跑”是不够的，至少要知道请求量、状态码和耗时。</p>
-<pre><code class="language-ts">interface LogContext {
-  requestId: string;
-  method: string;
-  path: string;
-  responseTime?: number;
-  statusCode?: number;
-}
+          <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(response.<span class="hljs-property">body</span>, {
+            <span class="hljs-attr">status</span>: response.<span class="hljs-property">status</span>,
+            <span class="hljs-attr">headers</span>: response.<span class="hljs-property">headers</span>
+          });
+        }</code></pre>
+        <h2>工程化补充</h2>
+        <h3>日志和监控</h3>
+        <p>只看“服务能跑”是不够的，至少要知道请求量、状态码和耗时。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">LogContext</span> {
+          <span class="hljs-attr">requestId</span>: <span class="hljs-built_in">string</span>;
+          <span class="hljs-attr">method</span>: <span class="hljs-built_in">string</span>;
+          <span class="hljs-attr">path</span>: <span class="hljs-built_in">string</span>;
+          <span class="hljs-attr">responseTime</span>?: <span class="hljs-built_in">number</span>;
+          <span class="hljs-attr">statusCode</span>?: <span class="hljs-built_in">number</span>;
+        }
 
-function logRequest(context: LogContext): void {
-  console.log(JSON.stringify({
-    timestamp: new Date().toISOString(),
-    level: &quot;INFO&quot;,
-    message: &quot;Request processed&quot;,
-    ...context
-  }));
-}
-</code></pre>
-<h3>部署方式</h3>
-<p>用容器化来固定运行环境，是这类小服务最省心的做法之一。</p>
-<pre><code class="language-dockerfile">FROM denoland/deno:1.40.0
+        <span class="hljs-keyword">function</span> <span class="hljs-title function_">logRequest</span>(<span class="hljs-params"><span class="hljs-attr">context</span>: <span class="hljs-title class_">LogContext</span></span>): <span class="hljs-built_in">void</span> {
+          <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
+            <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>(),
+            <span class="hljs-attr">level</span>: <span class="hljs-string">&quot;INFO&quot;</span>,
+            <span class="hljs-attr">message</span>: <span class="hljs-string">&quot;Request processed&quot;</span>,
+            ...context
+          }));
+        }</code></pre>
+        <h3>部署方式</h3>
+        <p>用容器化来固定运行环境，是这类小服务最省心的做法之一。</p>
+        <pre><code class="language-dockerfile"><span class="hljs-keyword">FROM</span> denoland/deno:<span class="hljs-number">1.40</span>.<span class="hljs-number">0</span>
 
-WORKDIR /app
-COPY . .
+        <span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app</span>
+        <span class="hljs-keyword">COPY</span><span class="language-bash"> . .</span>
 
-RUN deno cache src/main.ts
+        <span class="hljs-keyword">RUN</span><span class="language-bash"> deno cache src/main.ts</span>
 
-EXPOSE 8000
+        <span class="hljs-keyword">EXPOSE</span> <span class="hljs-number">8000</span>
 
-CMD [&quot;run&quot;, &quot;--allow-net&quot;, &quot;--allow-env&quot;, &quot;src/main.ts&quot;]
-</code></pre>
-<h2>遇到过的几个问题</h2>
-<h3>CORS</h3>
-<p>代理层经常需要补齐跨域头，不然前端接入会遇到一堆额外限制。</p>
-<pre><code class="language-ts">function addCorsHeaders(response: Response): Response {
-  const headers = new Headers(response.headers);
-  headers.set(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);
-  headers.set(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, DELETE, OPTIONS&quot;);
-  headers.set(&quot;Access-Control-Allow-Headers&quot;, &quot;Content-Type, Authorization&quot;);
+        <span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;run&quot;</span>, <span class="hljs-string">&quot;--allow-net&quot;</span>, <span class="hljs-string">&quot;--allow-env&quot;</span>, <span class="hljs-string">&quot;src/main.ts&quot;</span>]</span></code></pre>
+        <h2>遇到过的几个问题</h2>
+        <h3>CORS</h3>
+        <p>代理层经常需要补齐跨域头，不然前端接入会遇到一堆额外限制。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">addCorsHeaders</span>(<span class="hljs-params"><span class="hljs-attr">response</span>: <span class="hljs-title class_">Response</span></span>): <span class="hljs-title class_">Response</span> {
+          <span class="hljs-keyword">const</span> headers = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Headers</span>(response.<span class="hljs-property">headers</span>);
+          headers.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;Access-Control-Allow-Origin&quot;</span>, <span class="hljs-string">&quot;*&quot;</span>);
+          headers.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;Access-Control-Allow-Methods&quot;</span>, <span class="hljs-string">&quot;GET, POST, PUT, DELETE, OPTIONS&quot;</span>);
+          headers.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;Access-Control-Allow-Headers&quot;</span>, <span class="hljs-string">&quot;Content-Type, Authorization&quot;</span>);
 
-  return new Response(response.body, {
-    status: response.status,
-    headers
-  });
-}
-</code></pre>
-<h3>认证透传</h3>
-<p>代理认证信息时，既要保证功能正确，也要避免把不该转发的头无脑带出去。</p>
-<pre><code class="language-ts">function processAuthHeaders(headers: Headers): Headers {
-  const nextHeaders = new Headers();
+          <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(response.<span class="hljs-property">body</span>, {
+            <span class="hljs-attr">status</span>: response.<span class="hljs-property">status</span>,
+            headers
+          });
+        }</code></pre>
+        <h3>认证透传</h3>
+        <p>代理认证信息时，既要保证功能正确，也要避免把不该转发的头无脑带出去。</p>
+        <pre><code class="language-ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">processAuthHeaders</span>(<span class="hljs-params"><span class="hljs-attr">headers</span>: <span class="hljs-title class_">Headers</span></span>): <span class="hljs-title class_">Headers</span> {
+          <span class="hljs-keyword">const</span> nextHeaders = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Headers</span>();
 
-  for (const [key, value] of headers.entries()) {
-    if (key.toLowerCase() === &quot;authorization&quot;) {
-      if (value.startsWith(&quot;token &quot;) || value.startsWith(&quot;Bearer &quot;)) {
-        nextHeaders.set(key, value);
-      }
-    } else if (!key.toLowerCase().startsWith(&quot;x-forwarded-&quot;)) {
-      nextHeaders.set(key, value);
-    }
-  }
+          <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> headers.<span class="hljs-title function_">entries</span>()) {
+            <span class="hljs-keyword">if</span> (key.<span class="hljs-title function_">toLowerCase</span>() === <span class="hljs-string">&quot;authorization&quot;</span>) {
+              <span class="hljs-keyword">if</span> (value.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;token &quot;</span>) || value.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;Bearer &quot;</span>)) {
+                nextHeaders.<span class="hljs-title function_">set</span>(key, value);
+              }
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!key.<span class="hljs-title function_">toLowerCase</span>().<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&quot;x-forwarded-&quot;</span>)) {
+              nextHeaders.<span class="hljs-title function_">set</span>(key, value);
+            }
+          }
 
-  return nextHeaders;
-}
-</code></pre>
-<h2>总结</h2>
-<p>这个项目让我更加确定一件事：对很多中小型网络服务来说，关键不是技术栈本身有多新，而是路径是否清晰，边界是否稳定，运维成本是否可控。</p>
-<p>Deno 在这类代理服务里很好用，尤其适合想要快速落地一个现代 TypeScript 网络服务的场景。如果你也在做类似项目，建议从最小可用代理开始，再逐步加缓存、限流和监控，不要一开始就把系统做得过度复杂。</p>
+          <span class="hljs-keyword">return</span> nextHeaders;
+        }</code></pre>
+        <h2>总结</h2>
+        <p>这个项目让我更加确定一件事：对很多中小型网络服务来说，关键不是技术栈本身有多新，而是路径是否清晰，边界是否稳定，运维成本是否可控。</p>
+        <p>Deno 在这类代理服务里很好用，尤其适合想要快速落地一个现代 TypeScript 网络服务的场景。如果你也在做类似项目，建议从最小可用代理开始，再逐步加缓存、限流和监控，不要一开始就把系统做得过度复杂。</p>
 
+        </article>
+      <nav class="post-nav-wrap" aria-label="相邻文章">
+        <ul class="post-nav">
+          <li>
+            <a href="astrbot-plugin-development.html">
+              <span class="post-nav-label">← 上一篇</span>
+              <span class="post-nav-title">AstrBot插件开发实战：从零打造RAG记忆系统</span>
+            </a>
+          </li>
+          <li>
+            <a href="web-development.html">
+              <span class="post-nav-label">下一篇 →</span>
+              <span class="post-nav-title">Web开发学习心得与最佳实践</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+        <footer class="post-footer reveal">
+          <a href="../blog.html" class="back-link hatch">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19.5 12 C14 12 9.5 12 5.5 12"/>
+              <path d="M11.5 5.5 C9.5 7.5 7.5 10 5.5 12 C7.5 14 9.5 16.5 11.5 18.5"/>
+            </svg>
+            返回博客列表
+          </a>
+        </footer>
+      </div>
     </div>
+  </div>
 
-    <footer class="post-footer">
-      <a href="../blog.html" class="back-link">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        返回博客列表
-      </a>
-    </footer>
-  </main>
-
-  <footer>
-    <p>© 2026 lxfight · 用心书写每一篇</p>
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a href="../index.html" class="footer-brand">lxfight</a>
+          <p class="footer-tagline">在代码与文字之间，寻找可以长期维护的平衡。</p>
+        </div>
+        <div>
+          <h4>页面</h4>
+          <ul class="footer-list">
+            <li><a href="../index.html">首页</a></li>
+            <li><a href="../blog.html">博客</a></li>
+            <li><a href="../about.html">关于</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>联系</h4>
+          <ul class="footer-list">
+            <li><a href="https://github.com/lxfight" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:contact@lxfight.com">Email</a></li>
+            <li><a href="../blog.html">技术文章</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>© 2026 lxfight · 用心书写每一篇</span>
+        <span>手绘于方格纸上 · Sketch Style</span>
+      </div>
+    </div>
   </footer>
 
-  <button class="back-to-top" id="backToTop">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 19V5M5 12l7-7 7 7"/>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="回到页面顶部">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 19.5 C12 14 12 9.5 12 5.5"/>
+      <path d="M5.5 11.5 C7.5 9.5 10 7.5 12 5.5 C14 7.5 16.5 9.5 18.5 11.5"/>
     </svg>
   </button>
 
   <script>
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
+    (function () {
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
+      // 载入遮罩：短促淡出
+      var loader = document.getElementById('pageLoader');
 
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      function hideLoader() {
+        loader.classList.add('hidden');
+      }
+
+      if (document.readyState === 'complete') {
+        hideLoader();
+      } else {
+        window.addEventListener('load', hideLoader);
+      }
+      setTimeout(hideLoader, 1200);
+
+      // 铅笔笔尖光标
+      var cursor = document.getElementById('pencilCursor');
+      var finePointer = window.matchMedia('(pointer: fine)').matches;
+
+      if (cursor && finePointer && !reduceMotion) {
+        var pointerX = window.innerWidth / 2;
+        var pointerY = window.innerHeight / 2;
+        var ticking = false;
+
+        document.addEventListener('mousemove', function (event) {
+          pointerX = event.clientX;
+          pointerY = event.clientY;
+
+          // 首次移动指针后才显示，避免空载时出现孤立的笔尖
+          if (!cursor.classList.contains('is-live')) {
+            cursor.classList.add('is-live');
+          }
+
+          if (ticking) return;
+          ticking = true;
+
+          requestAnimationFrame(function () {
+            cursor.style.left = pointerX + 'px';
+            cursor.style.top = pointerY + 'px';
+            ticking = false;
+          });
+        }, { passive: true });
+
+        document.querySelectorAll('a, button, .tag, .tech-tag, .project-item, .interests-list li')
+          .forEach(function (el) {
+            el.addEventListener('mouseenter', function () { cursor.classList.add('is-inking'); });
+            el.addEventListener('mouseleave', function () { cursor.classList.remove('is-inking'); });
+          });
+
+        document.addEventListener('mousedown', function () { cursor.classList.add('is-pressing'); });
+        document.addEventListener('mouseup', function () { cursor.classList.remove('is-pressing'); });
+      }
+
+      // 阅读进度
+      var progress = document.getElementById('scrollProgress');
+      var backToTop = document.getElementById('backToTop');
+
+      function onScroll() {
+        var scrollTop = window.scrollY;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var ratio = docHeight > 0 ? scrollTop / docHeight : 0;
+        progress.style.width = Math.min(100, Math.max(0, ratio * 100)) + '%';
+        backToTop.classList.toggle('visible', scrollTop > 300);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+    })();
   </script>
 </body>
 </html>

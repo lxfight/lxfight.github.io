@@ -55,16 +55,17 @@ GitHub Pages 很适合个人博客：
 静态站点并不意味着样式受限。页面外观仍然由模板和 CSS 控制，内容则来自 Markdown。
 
 ```css
-.post-body blockquote {
-  padding-left: 20px;
-  border-left: 2px solid var(--accent);
-  color: var(--secondary);
+/* 铅笔手绘风：虚线边框 + 交叉排线阴影 + 纸张底 */
+.sketch-box {
+  background-color: var(--c-paper);
+  border: 2px dashed var(--c-pencil);
+  box-shadow: 2px 2px 0 0 var(--sh-md);
 }
 
-.post-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  transition: transform var(--transition);
+.post-body blockquote {
+  padding: 1rem 1.25rem;
+  border: 2px dashed var(--c-pencil);
+  color: var(--c-pencil-2);
 }
 ```
 

@@ -1,74 +1,142 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-palette="offwhite">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="lxfight 的技术博客：按时间排列的全部文章。">
+  <!-- 纸色主题：改 data-palette 即可切换整站配色
+       offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
+       blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
   <title>博客 - lxfight</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header id="header">
-    <div class="nav-container">
-      <a href="index.html" class="nav-logo">lxfight</a>
-      <nav>
-        <ul>
+  <a href="#main" class="skip-link">跳到主要内容</a>
+
+  <header class="site-header">
+    <div class="wrap nav-shell">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-mark" aria-hidden="true">✎</span>
+        lxfight
+      </a>
+      <nav aria-label="主导航">
+        <ul class="nav-links">
           <li><a href="index.html">首页</a></li>
+          <li><a href="blog.html" aria-current="page">博客</a></li>
           <li><a href="about.html">关于</a></li>
-          <li><a href="blog.html" class="active">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="page-header">
-    <h1>技术博客</h1>
-    <p>分享技术心得与实践经验</p>
-  </section>
+  <main id="main">
+    <!-- 页头：纸色底 -->
+    <section class="section section-plain page-header">
+      <div class="wrap-narrow">
+        <p class="mark" style="rotate:-1.2deg">✎ 全部笔记 · 按时间倒序</p>
+        <h1>技术<span class="u-wave-accent">博客</span></h1>
+        <p>分享技术心得与实践经验。写清楚问题和取舍，而不只是贴结论。</p>
+      </div>
+    </section>
 
-  <section class="posts-list">
-    {{allPosts}}
-  </section>
+    <!-- 列表：浅色衬底 -->
+    <section class="section section-tint" aria-label="文章列表" style="padding-top:0">
+      <div class="wrap-narrow">
+        <div class="posts-list">
+{{allPosts}}
+        </div>
+      </div>
+    </section>
+  </main>
 
-  <footer>
-    <p>© {{currentYear}} lxfight · 用心书写每一篇</p>
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="footer-brand">lxfight</a>
+          <p class="footer-tagline">在代码与文字之间，寻找可以长期维护的平衡。</p>
+        </div>
+        <div>
+          <h4>页面</h4>
+          <ul class="footer-list">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="blog.html">博客</a></li>
+            <li><a href="about.html">关于</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>联系</h4>
+          <ul class="footer-list">
+            <li><a href="https://github.com/lxfight" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:contact@lxfight.com">Email</a></li>
+            <li><a href="blog.html">技术文章</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>© {{currentYear}} lxfight · 用心书写每一篇</span>
+        <span>手绘于方格纸上 · Sketch Style</span>
+      </div>
+    </div>
   </footer>
 
-  <button class="back-to-top" id="backToTop">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 19V5M5 12l7-7 7 7"/>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="回到页面顶部">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 19.5 C12 14 12 9.5 12 5.5"/>
+      <path d="M5.5 11.5 C7.5 9.5 10 7.5 12 5.5 C14 7.5 16.5 9.5 18.5 11.5"/>
     </svg>
   </button>
 
   <script>
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
+    (function () {
+      var backToTop = document.getElementById('backToTop');
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
+      function onScroll() {
+        backToTop.classList.toggle('visible', window.scrollY > 300);
+      }
 
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-          entry.target.style.animationDelay = `${index * 100}ms`;
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
+      backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
-    }, { threshold: 0.1 });
 
-    document.querySelectorAll('.post-item').forEach(item => {
-      observer.observe(item);
-    });
+      var items = document.querySelectorAll('.post-item');
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!window.IntersectionObserver || reduceMotion) {
+        items.forEach(function (it) { it.classList.add('reveal', 'active'); });
+      } else {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        var fold = window.innerHeight * 0.9;
+
+        items.forEach(function (it) {
+          if (it.getBoundingClientRect().top < fold) {
+            it.classList.add('reveal', 'in-view');
+            return;
+          }
+          it.classList.add('reveal');
+          observer.observe(it);
+        });
+      }
+
+      setTimeout(function () {
+        document.querySelectorAll('.reveal:not(.active)').forEach(function (el) {
+          el.classList.add('active');
+        });
+      }, 2500);
+    })();
   </script>
 </body>
 </html>

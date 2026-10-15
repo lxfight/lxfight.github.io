@@ -1,105 +1,222 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-palette="offwhite">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="lxfight 的技术笔记：AI 插件开发、RAG 与记忆系统、全栈工程实践。">
+  <!-- 纸色主题：改 data-palette 即可切换整站配色
+       offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
+       blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
   <title>lxfight - 技术博客</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header id="header">
-    <div class="nav-container">
-      <a href="index.html" class="nav-logo">lxfight</a>
-      <nav>
-        <ul>
-          <li><a href="index.html" class="active">首页</a></li>
-          <li><a href="about.html">关于</a></li>
+  <a href="#main" class="skip-link">跳到主要内容</a>
+
+  <header class="site-header">
+    <div class="wrap nav-shell">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-mark" aria-hidden="true">✎</span>
+        lxfight
+      </a>
+      <nav aria-label="主导航">
+        <ul class="nav-links">
+          <li><a href="index.html" aria-current="page">首页</a></li>
           <li><a href="blog.html">博客</a></li>
+          <li><a href="about.html">关于</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-inner">
-      <h2>在代码与文字间<br>寻找平衡</h2>
-      <p>分享全栈开发、开源项目与技术思考</p>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <span class="stat-number">6+</span>
-          <span class="stat-label">开源项目</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">350+</span>
-          <span class="stat-label">GitHub Stars</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">{{articleCount}}</span>
-          <span class="stat-label">技术文章</span>
+  <main id="main">
+    <!-- 第一带：纸色底 + 横格线 -->
+    <section class="section section-plain hero">
+      <div class="wrap">
+        <div class="hero-inner">
+          <p class="mark" style="rotate:-1.4deg">✎ 素描本第一页 · 技术笔记本</p>
+          <h1>在代码与文字间
+            <span class="u-wave-accent">寻找平衡</span>
+          </h1>
+          <p class="hero-lede">
+            分享全栈开发、开源项目与技术思考。写下来的东西不求漂亮，
+            只求能落地、能被继续维护。
+          </p>
+          <div class="hero-actions">
+            <a href="blog.html" class="sketch-btn sketch-btn-primary hatch">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 5.5 C6 6.2 8 5.4 9.5 6 M4 11 c2 .6 4 -.1 5.5 .5 M4 16.5 c2 .6 4 -.1 5.5 .5"/>
+                <path d="M20 5.5 c-2 .7-4 -.1-5.5 .5 M20 11 c-2 .6-4 -.1-5.5 .5 M20 16.5 c-2 .6-4 -.1-5.5 .5"/>
+              </svg>
+              翻阅读书笔记
+            </a>
+            <a href="about.html" class="sketch-btn sketch-btn-ghost hatch">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 12.5 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0"/>
+                <path d="M4.5 21 c0-4 3.5-5.5 7.5-5.5 s7.5 1.5 7.5 5.5"/>
+              </svg>
+              关于我
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-number">6+</span>
+              <span class="stat-label">开源项目</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">350+</span>
+              <span class="stat-label">GitHub Stars</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">{{articleCount}}</span>
+              <span class="stat-label">技术文章</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="scroll-hint">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
-        </svg>
+    </section>
+
+    <!-- 第二带：浅色衬底 + 卡片网格（首篇卡片横跨两列） -->
+    <section class="section section-tint" aria-labelledby="recent-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="recent-title" class="u-dash">最新文章</h2>
+          <span class="section-note">最近更新 · 共 {{articleCount}} 篇</span>
+        </div>
+        <div class="posts-grid grid-cards">
+{{recentPosts}}
+        </div>
+        <div class="section-more">
+          <a href="blog.html" class="sketch-btn sketch-btn-ghost hatch">
+            查看全部文章
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第三带：纸色底 + 横格线，作为手写便签区 -->
+    <section class="section section-plain ruled-band" aria-labelledby="about-title">
+      <div class="wrap">
+        <div class="note-grid">
+          <div class="note-block">
+            <h2 id="about-title" class="u-dash">关于这个本子</h2>
+            <p>构建面向真实使用场景的 AI 插件、桌面能力与工程化工具。主要使用 Python 与
+              TypeScript，持续投入 AstrBot 生态、RAG、长期记忆与开发者工具方向。</p>
+            <p>更关心能力能否落地、插件能否持续维护、工具链能否减少重复工作。</p>
+            <ul class="about-links">
+              <li>
+                <a href="about.html" class="sketch-btn sketch-btn-ghost hatch">关于我</a>
+              </li>
+              <li>
+                <a href="https://github.com/lxfight" target="_blank" rel="noopener noreferrer" class="sketch-btn sketch-btn-ghost hatch">GitHub</a>
+              </li>
+            </ul>
+          </div>
+          <div class="note-aside">
+            <h3 class="note-aside-title">关注方向</h3>
+            <ul class="note-topics">
+              <li>AI 插件生态</li>
+              <li>RAG 与记忆系统</li>
+              <li>桌面交互</li>
+              <li>工程化工具</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="footer-brand">lxfight</a>
+          <p class="footer-tagline">在代码与文字之间，寻找可以长期维护的平衡。</p>
+        </div>
+        <div>
+          <h4>页面</h4>
+          <ul class="footer-list">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="blog.html">博客</a></li>
+            <li><a href="about.html">关于</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>联系</h4>
+          <ul class="footer-list">
+            <li><a href="https://github.com/lxfight" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:contact@lxfight.com">Email</a></li>
+            <li><a href="blog.html">技术文章</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>© {{currentYear}} lxfight · 用心书写每一篇</span>
+        <span>手绘于方格纸上 · Sketch Style</span>
       </div>
     </div>
-  </section>
-
-  <section class="recent-posts">
-    <div class="section-header">
-      <h2 class="section-title">最新文章</h2>
-    </div>
-    <div class="posts-grid">
-      {{recentPosts}}
-    </div>
-  </section>
-
-  <footer>
-    <p>© {{currentYear}} lxfight · 用心书写每一篇</p>
   </footer>
 
-  <button class="back-to-top" id="backToTop">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 19V5M5 12l7-7 7 7"/>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="回到页面顶部">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 19.5 C12 14 12 9.5 12 5.5"/>
+      <path d="M5.5 11.5 C7.5 9.5 10 7.5 12 5.5 C14 7.5 16.5 9.5 18.5 11.5"/>
     </svg>
   </button>
 
   <script>
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
+    (function () {
+      var backToTop = document.getElementById('backToTop');
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
+      function onScroll() {
+        backToTop.classList.toggle('visible', window.scrollY > 300);
+      }
 
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
 
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-          entry.target.style.animationDelay = `${index * 100}ms`;
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
+      backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
-    }, observerOptions);
 
-    document.querySelectorAll('.post-card').forEach(card => {
-      observer.observe(card);
-    });
+      var items = document.querySelectorAll('.post-card, .note-block, .note-aside');
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!window.IntersectionObserver || reduceMotion) {
+        items.forEach(function (el) { el.classList.add('reveal', 'active'); });
+      } else {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        var fold = window.innerHeight * 0.9;
+
+        items.forEach(function (el) {
+          // 首屏内的元素直接显示，不参与滚动动画
+          if (el.getBoundingClientRect().top < fold) {
+            el.classList.add('reveal', 'in-view');
+            return;
+          }
+          el.classList.add('reveal');
+          observer.observe(el);
+        });
+      }
+
+      // 兜底：任何情况下都不让内容停留在不可见状态
+      setTimeout(function () {
+        document.querySelectorAll('.reveal:not(.active)').forEach(function (el) {
+          el.classList.add('active');
+        });
+      }, 2500);
+    })();
   </script>
 </body>
 </html>

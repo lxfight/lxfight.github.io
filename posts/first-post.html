@@ -1,173 +1,301 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-palette="offwhite">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 纸色主题：改 data-palette 即可切换整站配色
+       offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
+       blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
   <title>开源之路：个人技术博客的搭建与思考 - lxfight</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header id="header">
-    <div class="nav-container">
-      <a href="../index.html" class="nav-logo">lxfight</a>
-      <nav>
-        <ul>
+  <a href="#main" class="skip-link">跳到主要内容</a>
+
+  <div class="pencil-cursor" id="pencilCursor" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <div class="page-loader" id="pageLoader" role="status" aria-label="页面加载中">
+    <div class="loader-mark">
+      <span class="loader-box" aria-hidden="true"></span>
+      <span class="loader-text">翻开这一页…</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap nav-shell">
+      <a href="../index.html" class="nav-logo">
+        <span class="logo-mark" aria-hidden="true">✎</span>
+        lxfight
+      </a>
+      <nav aria-label="主导航">
+        <ul class="nav-links">
           <li><a href="../index.html">首页</a></li>
+          <li><a href="../blog.html" aria-current="page">博客</a></li>
           <li><a href="../about.html">关于</a></li>
-          <li><a href="../blog.html" class="active">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="post-content">
-    <header class="post-header">
-      <h1>开源之路：个人技术博客的搭建与思考</h1>
-      <p class="post-meta">2024-01-01 · 博客建设</p>
-      <div class="post-tags">
-        <span class="tag">博客</span>
-        <span class="tag">GitHub Pages</span>
-        <span class="tag">开源分享</span>
+  <div class="page-content">
+    <!-- 页头带：纸色底 + 横格线，像笔记的抬头 -->
+    <header class="section section-plain ruled-band post-hero">
+      <div class="wrap-narrow">
+        <p class="mark" style="rotate:-1.2deg">✎ 笔记</p>
+        <h1>开源之路：个人技术博客的搭建与思考</h1>
+        <p class="post-meta"><time datetime="2024-01-01">2024-01-01</time><span class="meta-sep" aria-hidden="true">✎</span><span>博客建设</span></p>
+        <ul class="tag-row">
+        <li class="tag tag-accent">博客</li>
+        <li class="tag">GitHub Pages</li>
+        <li class="tag">开源分享</li>
+        </ul>
       </div>
     </header>
 
-    <div class="post-body">
-      <p>欢迎来到我的个人技术博客。这是一个记录我在技术探索路上的平台，也是我开源分享理念的体现。今天想和大家分享一下建立这个博客的初衷，以及我为什么决定把站点做成 Markdown 驱动的静态网站。</p>
-<h2>建站的初衷</h2>
-<p>作为一名开发者，我一直相信“分享即成长”。</p>
-<ul>
-<li>记录技术成长，把分散的学习经验系统化。</li>
-<li>分享开源项目，把踩过的坑和走通的路径说清楚。</li>
-<li>传播技术知识，帮助其他开发者解决实际问题。</li>
-<li>建立个人品牌，在技术社区中留下稳定输出。</li>
-</ul>
-<h2>为什么选择静态博客</h2>
-<p>对于个人博客，静态网站比传统 CMS 更适合长期维护。</p>
-<ul>
-<li>加载速度快，不依赖数据库查询。</li>
-<li>维护成本低，没有服务端运行和升级负担。</li>
-<li>安全性高，纯静态文件暴露面更小。</li>
-<li>版本可追踪，所有内容都可以直接放进 Git 仓库。</li>
-</ul>
-<h2>技术选型</h2>
-<p>这一版博客选择了最直接的一条路：HTML + CSS + 少量构建脚本。</p>
-<h3>GitHub Pages</h3>
-<p>GitHub Pages 很适合个人博客：</p>
-<ul>
-<li>部署简单，推送代码即可上线。</li>
-<li>原生支持静态资源托管。</li>
-<li>和仓库工作流天然整合。</li>
-</ul>
-<h3>Markdown 作为内容源</h3>
-<p>相比直接在 HTML 里写正文，Markdown 更适合写作：</p>
-<ul>
-<li>文章内容和页面结构分离。</li>
-<li>更容易维护长文。</li>
-<li>可以批量生成文章页、首页摘要和博客列表。</li>
-<li>后续要接入搜索、RSS 或标签页也更容易。</li>
-</ul>
-<h3>保留设计自由度</h3>
-<p>静态站点并不意味着样式受限。页面外观仍然由模板和 CSS 控制，内容则来自 Markdown。</p>
-<pre><code class="language-css">.post-body blockquote {
-  padding-left: 20px;
-  border-left: 2px solid var(--accent);
-  color: var(--secondary);
-}
+    <!-- 正文带：纸片底，与页头形成色阶 -->
+    <div class="section section-paper post-main">
+      <div class="wrap-narrow">
+        <article class="post-body">
+        <p>欢迎来到我的个人技术博客。这是一个记录我在技术探索路上的平台，也是我开源分享理念的体现。今天想和大家分享一下建立这个博客的初衷，以及我为什么决定把站点做成 Markdown 驱动的静态网站。</p>
+        <h2>建站的初衷</h2>
+        <p>作为一名开发者，我一直相信“分享即成长”。</p>
+        <ul>
+        <li>记录技术成长，把分散的学习经验系统化。</li>
+        <li>分享开源项目，把踩过的坑和走通的路径说清楚。</li>
+        <li>传播技术知识，帮助其他开发者解决实际问题。</li>
+        <li>建立个人品牌，在技术社区中留下稳定输出。</li>
+        </ul>
+        <h2>为什么选择静态博客</h2>
+        <p>对于个人博客，静态网站比传统 CMS 更适合长期维护。</p>
+        <ul>
+        <li>加载速度快，不依赖数据库查询。</li>
+        <li>维护成本低，没有服务端运行和升级负担。</li>
+        <li>安全性高，纯静态文件暴露面更小。</li>
+        <li>版本可追踪，所有内容都可以直接放进 Git 仓库。</li>
+        </ul>
+        <h2>技术选型</h2>
+        <p>这一版博客选择了最直接的一条路：HTML + CSS + 少量构建脚本。</p>
+        <h3>GitHub Pages</h3>
+        <p>GitHub Pages 很适合个人博客：</p>
+        <ul>
+        <li>部署简单，推送代码即可上线。</li>
+        <li>原生支持静态资源托管。</li>
+        <li>和仓库工作流天然整合。</li>
+        </ul>
+        <h3>Markdown 作为内容源</h3>
+        <p>相比直接在 HTML 里写正文，Markdown 更适合写作：</p>
+        <ul>
+        <li>文章内容和页面结构分离。</li>
+        <li>更容易维护长文。</li>
+        <li>可以批量生成文章页、首页摘要和博客列表。</li>
+        <li>后续要接入搜索、RSS 或标签页也更容易。</li>
+        </ul>
+        <h3>保留设计自由度</h3>
+        <p>静态站点并不意味着样式受限。页面外观仍然由模板和 CSS 控制，内容则来自 Markdown。</p>
+        <pre><code class="language-css"><span class="hljs-comment">/* 铅笔手绘风：虚线边框 + 交叉排线阴影 + 纸张底 */</span>
+        <span class="hljs-selector-class">.sketch-box</span> {
+          <span class="hljs-attribute">background-color</span>: <span class="hljs-built_in">var</span>(--c-paper);
+          <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> dashed <span class="hljs-built_in">var</span>(--c-pencil);
+          <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">2px</span> <span class="hljs-number">2px</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-built_in">var</span>(--sh-md);
+        }
 
-.post-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  transition: transform var(--transition);
-}
-</code></pre>
-<h2>内容规划</h2>
-<p>我希望这个博客长期覆盖几类内容：</p>
-<ul>
-<li>AI 应用开发，尤其是 RAG 和工具链实践。</li>
-<li>Web 开发，从前端到部署的完整经验。</li>
-<li>开源项目复盘，关注架构、取舍和维护。</li>
-<li>个人学习记录，把过程写清楚而不是只给结论。</li>
-</ul>
-<h2>持续迭代</h2>
-<p>博客建设不是一次性工作，而是持续优化的过程。</p>
-<h3>用户体验</h3>
-<ul>
-<li>响应式布局，保证移动端阅读体验。</li>
-<li>更稳的排版和留白，降低长文阅读疲劳。</li>
-<li>首页和列表页自动从 Markdown 生成，减少手工同步错误。</li>
-</ul>
-<h3>内容质量</h3>
-<ul>
-<li>尽量给出完整上下文，而不是只贴代码片段。</li>
-<li>保留关键设计取舍，方便后续复盘。</li>
-<li>让文章既能被读，也能被继续维护。</li>
-</ul>
-<h2>开源理念</h2>
-<p>这个博客本身也是我对开源理念的一次实践。</p>
-<blockquote>
-<p>代码开源，知识共享。写出来不仅是记录，也是对社区的回馈。</p>
-</blockquote>
-<p>我希望它能持续承担几件事：</p>
-<ul>
-<li>分享实际项目中的技术挑战和解决方案。</li>
-<li>公开整理有价值的工具和脚本。</li>
-<li>参与技术社区讨论，形成正向反馈。</li>
-</ul>
-<h2>未来规划</h2>
-<p>后续我会继续补充这些方向：</p>
-<ul>
-<li>AI 应用开发系列：从 RAG 到 LLM 工作流。</li>
-<li>现代 Web 开发系列：从页面到构建部署。</li>
-<li>开源项目分析系列：从需求到架构演化。</li>
-</ul>
-<h2>联系方式</h2>
-<p>如果你对这些内容感兴趣，或者正在做类似的项目，欢迎交流。</p>
-<ul>
-<li><strong>GitHub</strong>: <a href="https://github.com/lxfight">@lxfight</a></li>
-<li><strong>邮箱</strong>: <a href="mailto:contact@lxfight.com">contact@lxfight.com</a></li>
-</ul>
-<h2>写在最后</h2>
-<p>技术博客不仅是知识的载体，更是思维的外化。把内容从 HTML 正文里抽离出来，变成 Markdown 驱动的静态站点，对我来说既是一次工程整理，也是一次写作流程升级。</p>
+        <span class="hljs-selector-class">.post-body</span> <span class="hljs-selector-tag">blockquote</span> {
+          <span class="hljs-attribute">padding</span>: <span class="hljs-number">1rem</span> <span class="hljs-number">1.25rem</span>;
+          <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> dashed <span class="hljs-built_in">var</span>(--c-pencil);
+          <span class="hljs-attribute">color</span>: <span class="hljs-built_in">var</span>(--c-pencil-<span class="hljs-number">2</span>);
+        }</code></pre>
+        <h2>内容规划</h2>
+        <p>我希望这个博客长期覆盖几类内容：</p>
+        <ul>
+        <li>AI 应用开发，尤其是 RAG 和工具链实践。</li>
+        <li>Web 开发，从前端到部署的完整经验。</li>
+        <li>开源项目复盘，关注架构、取舍和维护。</li>
+        <li>个人学习记录，把过程写清楚而不是只给结论。</li>
+        </ul>
+        <h2>持续迭代</h2>
+        <p>博客建设不是一次性工作，而是持续优化的过程。</p>
+        <h3>用户体验</h3>
+        <ul>
+        <li>响应式布局，保证移动端阅读体验。</li>
+        <li>更稳的排版和留白，降低长文阅读疲劳。</li>
+        <li>首页和列表页自动从 Markdown 生成，减少手工同步错误。</li>
+        </ul>
+        <h3>内容质量</h3>
+        <ul>
+        <li>尽量给出完整上下文，而不是只贴代码片段。</li>
+        <li>保留关键设计取舍，方便后续复盘。</li>
+        <li>让文章既能被读，也能被继续维护。</li>
+        </ul>
+        <h2>开源理念</h2>
+        <p>这个博客本身也是我对开源理念的一次实践。</p>
+        <blockquote>
+        <p>代码开源，知识共享。写出来不仅是记录，也是对社区的回馈。</p>
+        </blockquote>
+        <p>我希望它能持续承担几件事：</p>
+        <ul>
+        <li>分享实际项目中的技术挑战和解决方案。</li>
+        <li>公开整理有价值的工具和脚本。</li>
+        <li>参与技术社区讨论，形成正向反馈。</li>
+        </ul>
+        <h2>未来规划</h2>
+        <p>后续我会继续补充这些方向：</p>
+        <ul>
+        <li>AI 应用开发系列：从 RAG 到 LLM 工作流。</li>
+        <li>现代 Web 开发系列：从页面到构建部署。</li>
+        <li>开源项目分析系列：从需求到架构演化。</li>
+        </ul>
+        <h2>联系方式</h2>
+        <p>如果你对这些内容感兴趣，或者正在做类似的项目，欢迎交流。</p>
+        <ul>
+        <li><strong>GitHub</strong>: <a href="https://github.com/lxfight">@lxfight</a></li>
+        <li><strong>邮箱</strong>: <a href="mailto:contact@lxfight.com">contact@lxfight.com</a></li>
+        </ul>
+        <h2>写在最后</h2>
+        <p>技术博客不仅是知识的载体，更是思维的外化。把内容从 HTML 正文里抽离出来，变成 Markdown 驱动的静态站点，对我来说既是一次工程整理，也是一次写作流程升级。</p>
 
+        </article>
+      <nav class="post-nav-wrap" aria-label="相邻文章">
+        <ul class="post-nav">
+          <li>
+            <a href="web-development.html">
+              <span class="post-nav-label">← 上一篇</span>
+              <span class="post-nav-title">Web开发学习心得与最佳实践</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+        <footer class="post-footer reveal">
+          <a href="../blog.html" class="back-link hatch">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19.5 12 C14 12 9.5 12 5.5 12"/>
+              <path d="M11.5 5.5 C9.5 7.5 7.5 10 5.5 12 C7.5 14 9.5 16.5 11.5 18.5"/>
+            </svg>
+            返回博客列表
+          </a>
+        </footer>
+      </div>
     </div>
+  </div>
 
-    <footer class="post-footer">
-      <a href="../blog.html" class="back-link">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        返回博客列表
-      </a>
-    </footer>
-  </main>
-
-  <footer>
-    <p>© 2026 lxfight · 用心书写每一篇</p>
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a href="../index.html" class="footer-brand">lxfight</a>
+          <p class="footer-tagline">在代码与文字之间，寻找可以长期维护的平衡。</p>
+        </div>
+        <div>
+          <h4>页面</h4>
+          <ul class="footer-list">
+            <li><a href="../index.html">首页</a></li>
+            <li><a href="../blog.html">博客</a></li>
+            <li><a href="../about.html">关于</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>联系</h4>
+          <ul class="footer-list">
+            <li><a href="https://github.com/lxfight" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:contact@lxfight.com">Email</a></li>
+            <li><a href="../blog.html">技术文章</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>© 2026 lxfight · 用心书写每一篇</span>
+        <span>手绘于方格纸上 · Sketch Style</span>
+      </div>
+    </div>
   </footer>
 
-  <button class="back-to-top" id="backToTop">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 19V5M5 12l7-7 7 7"/>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="回到页面顶部">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 19.5 C12 14 12 9.5 12 5.5"/>
+      <path d="M5.5 11.5 C7.5 9.5 10 7.5 12 5.5 C14 7.5 16.5 9.5 18.5 11.5"/>
     </svg>
   </button>
 
   <script>
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
+    (function () {
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
+      // 载入遮罩：短促淡出
+      var loader = document.getElementById('pageLoader');
 
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      function hideLoader() {
+        loader.classList.add('hidden');
+      }
+
+      if (document.readyState === 'complete') {
+        hideLoader();
+      } else {
+        window.addEventListener('load', hideLoader);
+      }
+      setTimeout(hideLoader, 1200);
+
+      // 铅笔笔尖光标
+      var cursor = document.getElementById('pencilCursor');
+      var finePointer = window.matchMedia('(pointer: fine)').matches;
+
+      if (cursor && finePointer && !reduceMotion) {
+        var pointerX = window.innerWidth / 2;
+        var pointerY = window.innerHeight / 2;
+        var ticking = false;
+
+        document.addEventListener('mousemove', function (event) {
+          pointerX = event.clientX;
+          pointerY = event.clientY;
+
+          // 首次移动指针后才显示，避免空载时出现孤立的笔尖
+          if (!cursor.classList.contains('is-live')) {
+            cursor.classList.add('is-live');
+          }
+
+          if (ticking) return;
+          ticking = true;
+
+          requestAnimationFrame(function () {
+            cursor.style.left = pointerX + 'px';
+            cursor.style.top = pointerY + 'px';
+            ticking = false;
+          });
+        }, { passive: true });
+
+        document.querySelectorAll('a, button, .tag, .tech-tag, .project-item, .interests-list li')
+          .forEach(function (el) {
+            el.addEventListener('mouseenter', function () { cursor.classList.add('is-inking'); });
+            el.addEventListener('mouseleave', function () { cursor.classList.remove('is-inking'); });
+          });
+
+        document.addEventListener('mousedown', function () { cursor.classList.add('is-pressing'); });
+        document.addEventListener('mouseup', function () { cursor.classList.remove('is-pressing'); });
+      }
+
+      // 阅读进度
+      var progress = document.getElementById('scrollProgress');
+      var backToTop = document.getElementById('backToTop');
+
+      function onScroll() {
+        var scrollTop = window.scrollY;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var ratio = docHeight > 0 ? scrollTop / docHeight : 0;
+        progress.style.width = Math.min(100, Math.max(0, ratio * 100)) + '%';
+        backToTop.classList.toggle('visible', scrollTop > 300);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+    })();
   </script>
 </body>
 </html>

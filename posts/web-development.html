@@ -1,124 +1,258 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-palette="offwhite">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 纸色主题：改 data-palette 即可切换整站配色
+       offwhite 米白 / cream 米黄 / sand 沙色 / mist 冷灰 / sage 鼠尾草
+       blueprint 蓝图纸 / chalkboard 黑板 / ink 铅笔黑 -->
   <title>Web开发学习心得与最佳实践 - lxfight</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header id="header">
-    <div class="nav-container">
-      <a href="../index.html" class="nav-logo">lxfight</a>
-      <nav>
-        <ul>
+  <a href="#main" class="skip-link">跳到主要内容</a>
+
+  <div class="pencil-cursor" id="pencilCursor" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <div class="page-loader" id="pageLoader" role="status" aria-label="页面加载中">
+    <div class="loader-mark">
+      <span class="loader-box" aria-hidden="true"></span>
+      <span class="loader-text">翻开这一页…</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap nav-shell">
+      <a href="../index.html" class="nav-logo">
+        <span class="logo-mark" aria-hidden="true">✎</span>
+        lxfight
+      </a>
+      <nav aria-label="主导航">
+        <ul class="nav-links">
           <li><a href="../index.html">首页</a></li>
+          <li><a href="../blog.html" aria-current="page">博客</a></li>
           <li><a href="../about.html">关于</a></li>
-          <li><a href="../blog.html" class="active">博客</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="post-content">
-    <header class="post-header">
-      <h1>Web开发学习心得与最佳实践</h1>
-      <p class="post-meta">2024-01-15 · 前端成长</p>
-      <div class="post-tags">
-        <span class="tag">前端</span>
-        <span class="tag">经验分享</span>
+  <div class="page-content">
+    <!-- 页头带：纸色底 + 横格线，像笔记的抬头 -->
+    <header class="section section-plain ruled-band post-hero">
+      <div class="wrap-narrow">
+        <p class="mark" style="rotate:-1.2deg">✎ 笔记</p>
+        <h1>Web开发学习心得与最佳实践</h1>
+        <p class="post-meta"><time datetime="2024-01-15">2024-01-15</time><span class="meta-sep" aria-hidden="true">✎</span><span>前端成长</span></p>
+        <ul class="tag-row">
+        <li class="tag tag-accent">前端</li>
+        <li class="tag">经验分享</li>
+        </ul>
       </div>
     </header>
 
-    <div class="post-body">
-      <p>在过去的几个月里，我一直在系统学习 Web 开发。回头看，这条路最难的不是技术点本身，而是如何建立一条稳定、可持续的学习路径。这里整理一些我自己验证过的经验。</p>
-<h2>基础永远重要</h2>
-<p>无论最后使用 React、Vue 还是其他框架，HTML、CSS 和 JavaScript 的基础都绕不过去。</p>
-<p>很多初学者一上来就追新框架，但基础薄弱时，问题会被不断放大：</p>
-<ul>
-<li>看不懂组件背后的 DOM 和事件流。</li>
-<li>无法判断样式问题到底来自布局还是框架封装。</li>
-<li>调试时只能依赖猜测，而不是定位原因。</li>
-</ul>
-<p>基础扎实的直接收益是：学新技术更快，排错更稳，换技术栈时迁移成本更低。</p>
-<h2>一条更稳的学习路径</h2>
-<p>如果让我重新来一次，我会建议按下面的顺序推进：</p>
-<ol>
-<li>掌握 HTML、CSS、JavaScript 基础。</li>
-<li>学一个主流前端框架，React 或 Vue 都可以。</li>
-<li>补上 Node.js 和接口调用等后端基础。</li>
-<li>学数据库和数据建模。</li>
-<li>熟练使用 Git，把版本管理当成日常习惯。</li>
-</ol>
-<p>这个顺序的关键不在于“标准答案”，而在于每一步都能接到下一步，避免知识点散落。</p>
-<h2>实战项目比刷概念更有效</h2>
-<p>理论学习当然有价值，但真正让知识固定下来的，还是项目。</p>
-<p>每学完一个新技术，我都会尽量做一个最小可运行项目，比如：</p>
-<ul>
-<li>一个响应式落地页，用来练布局和组件拆分。</li>
-<li>一个带接口请求的小应用，用来练状态管理和异步流程。</li>
-<li>一个后台管理页，用来练表单、表格和权限逻辑。</li>
-</ul>
-<p>项目不需要大，但一定要能跑、能改、能复盘。</p>
-<h2>学会做取舍</h2>
-<p>Web 技术更新很快，保持开放很重要，但盲目追新会让人长期停留在“知道很多名词，却很难真正交付”的状态。</p>
-<p>我现在更看重这些判断标准：</p>
-<ul>
-<li>这个技术是否解决当前问题。</li>
-<li>团队或个人是否能长期维护。</li>
-<li>学习投入是否和业务收益匹配。</li>
-</ul>
-<p>“适合当前项目”通常比“最新最热门”更重要。</p>
-<h2>一些实用建议</h2>
-<ul>
-<li>别跳过浏览器开发者工具，它几乎是前端工程师的第二终端。</li>
-<li>尽早养成拆组件和整理样式的习惯。</li>
-<li>把常见问题写成自己的笔记，而不是每次重新搜索。</li>
-<li>定期回头重构旧项目，能很直观看到自己的成长。</li>
-</ul>
-<h2>总结</h2>
-<p>Web 开发是一个门槛不高、上限很高的领域。学习过程中最值得投入的，不是追逐每一个热点，而是建立一套可以长期复用的认知框架和实践节奏。</p>
-<p>如果你也在这条路上，建议从基础出发，尽快做项目，并且持续复盘。长期看，这比任何速成路线都更可靠。</p>
+    <!-- 正文带：纸片底，与页头形成色阶 -->
+    <div class="section section-paper post-main">
+      <div class="wrap-narrow">
+        <article class="post-body">
+        <p>在过去的几个月里，我一直在系统学习 Web 开发。回头看，这条路最难的不是技术点本身，而是如何建立一条稳定、可持续的学习路径。这里整理一些我自己验证过的经验。</p>
+        <h2>基础永远重要</h2>
+        <p>无论最后使用 React、Vue 还是其他框架，HTML、CSS 和 JavaScript 的基础都绕不过去。</p>
+        <p>很多初学者一上来就追新框架，但基础薄弱时，问题会被不断放大：</p>
+        <ul>
+        <li>看不懂组件背后的 DOM 和事件流。</li>
+        <li>无法判断样式问题到底来自布局还是框架封装。</li>
+        <li>调试时只能依赖猜测，而不是定位原因。</li>
+        </ul>
+        <p>基础扎实的直接收益是：学新技术更快，排错更稳，换技术栈时迁移成本更低。</p>
+        <h2>一条更稳的学习路径</h2>
+        <p>如果让我重新来一次，我会建议按下面的顺序推进：</p>
+        <ol>
+        <li>掌握 HTML、CSS、JavaScript 基础。</li>
+        <li>学一个主流前端框架，React 或 Vue 都可以。</li>
+        <li>补上 Node.js 和接口调用等后端基础。</li>
+        <li>学数据库和数据建模。</li>
+        <li>熟练使用 Git，把版本管理当成日常习惯。</li>
+        </ol>
+        <p>这个顺序的关键不在于“标准答案”，而在于每一步都能接到下一步，避免知识点散落。</p>
+        <h2>实战项目比刷概念更有效</h2>
+        <p>理论学习当然有价值，但真正让知识固定下来的，还是项目。</p>
+        <p>每学完一个新技术，我都会尽量做一个最小可运行项目，比如：</p>
+        <ul>
+        <li>一个响应式落地页，用来练布局和组件拆分。</li>
+        <li>一个带接口请求的小应用，用来练状态管理和异步流程。</li>
+        <li>一个后台管理页，用来练表单、表格和权限逻辑。</li>
+        </ul>
+        <p>项目不需要大，但一定要能跑、能改、能复盘。</p>
+        <h2>学会做取舍</h2>
+        <p>Web 技术更新很快，保持开放很重要，但盲目追新会让人长期停留在“知道很多名词，却很难真正交付”的状态。</p>
+        <p>我现在更看重这些判断标准：</p>
+        <ul>
+        <li>这个技术是否解决当前问题。</li>
+        <li>团队或个人是否能长期维护。</li>
+        <li>学习投入是否和业务收益匹配。</li>
+        </ul>
+        <p>“适合当前项目”通常比“最新最热门”更重要。</p>
+        <h2>一些实用建议</h2>
+        <ul>
+        <li>别跳过浏览器开发者工具，它几乎是前端工程师的第二终端。</li>
+        <li>尽早养成拆组件和整理样式的习惯。</li>
+        <li>把常见问题写成自己的笔记，而不是每次重新搜索。</li>
+        <li>定期回头重构旧项目，能很直观看到自己的成长。</li>
+        </ul>
+        <h2>总结</h2>
+        <p>Web 开发是一个门槛不高、上限很高的领域。学习过程中最值得投入的，不是追逐每一个热点，而是建立一套可以长期复用的认知框架和实践节奏。</p>
+        <p>如果你也在这条路上，建议从基础出发，尽快做项目，并且持续复盘。长期看，这比任何速成路线都更可靠。</p>
 
+        </article>
+      <nav class="post-nav-wrap" aria-label="相邻文章">
+        <ul class="post-nav">
+          <li>
+            <a href="deno-github-proxy.html">
+              <span class="post-nav-label">← 上一篇</span>
+              <span class="post-nav-title">GitHub加速访问服务的Deno实现与架构思考</span>
+            </a>
+          </li>
+          <li>
+            <a href="first-post.html">
+              <span class="post-nav-label">下一篇 →</span>
+              <span class="post-nav-title">开源之路：个人技术博客的搭建与思考</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+        <footer class="post-footer reveal">
+          <a href="../blog.html" class="back-link hatch">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19.5 12 C14 12 9.5 12 5.5 12"/>
+              <path d="M11.5 5.5 C9.5 7.5 7.5 10 5.5 12 C7.5 14 9.5 16.5 11.5 18.5"/>
+            </svg>
+            返回博客列表
+          </a>
+        </footer>
+      </div>
     </div>
+  </div>
 
-    <footer class="post-footer">
-      <a href="../blog.html" class="back-link">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        返回博客列表
-      </a>
-    </footer>
-  </main>
-
-  <footer>
-    <p>© 2026 lxfight · 用心书写每一篇</p>
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a href="../index.html" class="footer-brand">lxfight</a>
+          <p class="footer-tagline">在代码与文字之间，寻找可以长期维护的平衡。</p>
+        </div>
+        <div>
+          <h4>页面</h4>
+          <ul class="footer-list">
+            <li><a href="../index.html">首页</a></li>
+            <li><a href="../blog.html">博客</a></li>
+            <li><a href="../about.html">关于</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>联系</h4>
+          <ul class="footer-list">
+            <li><a href="https://github.com/lxfight" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:contact@lxfight.com">Email</a></li>
+            <li><a href="../blog.html">技术文章</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>© 2026 lxfight · 用心书写每一篇</span>
+        <span>手绘于方格纸上 · Sketch Style</span>
+      </div>
+    </div>
   </footer>
 
-  <button class="back-to-top" id="backToTop">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 19V5M5 12l7-7 7 7"/>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="回到页面顶部">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 19.5 C12 14 12 9.5 12 5.5"/>
+      <path d="M5.5 11.5 C7.5 9.5 10 7.5 12 5.5 C14 7.5 16.5 9.5 18.5 11.5"/>
     </svg>
   </button>
 
   <script>
-    const header = document.getElementById('header');
-    const backToTop = document.getElementById('backToTop');
+    (function () {
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 300;
-      backToTop.classList.toggle('visible', scrolled);
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
+      // 载入遮罩：短促淡出
+      var loader = document.getElementById('pageLoader');
 
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      function hideLoader() {
+        loader.classList.add('hidden');
+      }
+
+      if (document.readyState === 'complete') {
+        hideLoader();
+      } else {
+        window.addEventListener('load', hideLoader);
+      }
+      setTimeout(hideLoader, 1200);
+
+      // 铅笔笔尖光标
+      var cursor = document.getElementById('pencilCursor');
+      var finePointer = window.matchMedia('(pointer: fine)').matches;
+
+      if (cursor && finePointer && !reduceMotion) {
+        var pointerX = window.innerWidth / 2;
+        var pointerY = window.innerHeight / 2;
+        var ticking = false;
+
+        document.addEventListener('mousemove', function (event) {
+          pointerX = event.clientX;
+          pointerY = event.clientY;
+
+          // 首次移动指针后才显示，避免空载时出现孤立的笔尖
+          if (!cursor.classList.contains('is-live')) {
+            cursor.classList.add('is-live');
+          }
+
+          if (ticking) return;
+          ticking = true;
+
+          requestAnimationFrame(function () {
+            cursor.style.left = pointerX + 'px';
+            cursor.style.top = pointerY + 'px';
+            ticking = false;
+          });
+        }, { passive: true });
+
+        document.querySelectorAll('a, button, .tag, .tech-tag, .project-item, .interests-list li')
+          .forEach(function (el) {
+            el.addEventListener('mouseenter', function () { cursor.classList.add('is-inking'); });
+            el.addEventListener('mouseleave', function () { cursor.classList.remove('is-inking'); });
+          });
+
+        document.addEventListener('mousedown', function () { cursor.classList.add('is-pressing'); });
+        document.addEventListener('mouseup', function () { cursor.classList.remove('is-pressing'); });
+      }
+
+      // 阅读进度
+      var progress = document.getElementById('scrollProgress');
+      var backToTop = document.getElementById('backToTop');
+
+      function onScroll() {
+        var scrollTop = window.scrollY;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var ratio = docHeight > 0 ? scrollTop / docHeight : 0;
+        progress.style.width = Math.min(100, Math.max(0, ratio * 100)) + '%';
+        backToTop.classList.toggle('visible', scrollTop > 300);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+    })();
   </script>
 </body>
 </html>
