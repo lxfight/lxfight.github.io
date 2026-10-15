@@ -1,10 +1,11 @@
 {
   "name": "lxfight-blog",
   "version": "1.0.0",
-  "description": "Static blog generator using Markdown",
+  "description": "Markdown 驱动的静态博客，铅笔手绘风（Sketch Style），支持多套纸色主题",
   "scripts": {
     "build": "node build.js",
-    "dev": "node build.js --watch"
+    "dev": "node build.js --watch",
+    "check": "node sketch-check.js"
   },
   "dependencies": {
     "marked": "^12.0.0",
