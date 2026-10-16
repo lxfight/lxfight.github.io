@@ -54,6 +54,7 @@ const BLOG_TEMPLATE_PATH = path.join(ROOT_DIR, 'blog.template.html');
 const POSTS_MANIFEST_PATH = path.join(ROOT_DIR, 'posts.json');
 const INDEX_OUTPUT_PATH = path.join(ROOT_DIR, 'index.html');
 const BLOG_OUTPUT_PATH = path.join(ROOT_DIR, 'blog.html');
+const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -375,11 +376,51 @@ function buildAll() {
 
   buildListingPages(posts);
   buildPostsManifest(posts);
+  copyToDist();
 
   console.log(`Generated index: ${INDEX_OUTPUT_PATH}`);
   console.log(`Generated blog: ${BLOG_OUTPUT_PATH}`);
   console.log(`Generated manifest: ${POSTS_MANIFEST_PATH}`);
   console.log(`Built ${posts.length} post(s).`);
+}
+
+function copyToDist() {
+  ensureDir(DIST_DIR);
+  const distPostsDir = path.join(DIST_DIR, 'posts');
+  ensureDir(distPostsDir);
+
+  const staticFiles = [
+    'index.html',
+    'blog.html',
+    'about.html',
+    'styles.css',
+    'posts.json'
+  ];
+
+  for (const fileName of staticFiles) {
+    const src = path.join(ROOT_DIR, fileName);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(DIST_DIR, fileName));
+    }
+  }
+
+  if (fs.existsSync(OUTPUT_DIR)) {
+    const postHtmls = fs.readdirSync(OUTPUT_DIR).filter(f => f.endsWith('.html'));
+    for (const postHtml of postHtmls) {
+      fs.copyFileSync(path.join(OUTPUT_DIR, postHtml), path.join(distPostsDir, postHtml));
+    }
+  }
+
+  const assetDirs = ['images', 'assets', 'img', 'static'];
+  for (const dir of assetDirs) {
+    const srcDir = path.join(ROOT_DIR, dir);
+    if (fs.existsSync(srcDir) && fs.statSync(srcDir).isDirectory()) {
+      fs.cpSync(srcDir, path.join(DIST_DIR, dir), { recursive: true });
+    }
+  }
+
+  writeUtf8(path.join(DIST_DIR, '.nojekyll'), '');
+  console.log(`Exported clean static site to: ${DIST_DIR}`);
 }
 
 if (process.argv.includes('--watch')) {

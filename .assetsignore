@@ -1,0 +1,11 @@
+# Ignore development and source files from static asset deployment
+node_modules/
+.git/
+.github/
+posts-md/
+*.md
+*.template.html
+build.js
+sketch-check.js
+package.json
+package-lock.json
